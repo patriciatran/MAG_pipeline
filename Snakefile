@@ -12,4 +12,5 @@ rule download_ncbi_genomes:
         TMPDIR="{resources.tmpdir}"
         {input.script}
         mv refseq/**/* data/.
+        rm -rf refseq
         """
