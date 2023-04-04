@@ -1,0 +1,14 @@
+name: hmmer
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+  - ursky
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=2_gnu
+  - hmmer=3.3.2=h87f3376_2
+  - libgcc-ng=12.2.0=h65d4601_19
+  - libgomp=12.2.0=h65d4601_19
+  - libstdcxx-ng=12.2.0=h46fd767_19
+prefix: /home/patricia/miniconda3/envs/hmmer
