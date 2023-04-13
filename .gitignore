@@ -1,6 +1,6 @@
-data/*
-.snakemake/*
-refseq/*
+data/
+.snakemake/
+results/
 
 # History files
 .Rhistory
