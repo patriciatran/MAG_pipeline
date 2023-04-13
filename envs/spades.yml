@@ -1,0 +1,37 @@
+name: spades
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+  - ursky
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=1_gnu
+  - _sysroot_linux-64_curr_repodata_hack=3=h5bd9786_13
+  - bzip2=1.0.8=h7f98852_4
+  - ca-certificates=2021.10.8=ha878542_0
+  - kernel-headers_linux-64=3.10.0=h4a8ded7_13
+  - ld_impl_linux-64=2.36.1=hea4e1c9_2
+  - libffi=3.4.2=h7f98852_5
+  - libgcc-ng=11.2.0=h1d223b6_12
+  - libgomp=11.2.0=h1d223b6_12
+  - libnsl=2.0.0=h7f98852_0
+  - libstdcxx-ng=11.2.0=he4da1e4_12
+  - libzlib=1.2.11=h36c2ea0_1013
+  - llvm-openmp=8.0.1=hc9558a2_0
+  - ncurses=6.3=h9c3ff4c_0
+  - openmp=8.0.1=0
+  - openssl=3.0.0=h7f98852_2
+  - pip=22.0.3=pyhd8ed1ab_0
+  - python=3.8.12=h0744224_3_cpython
+  - python_abi=3.8=2_cp38
+  - readline=8.1=h46c0cb4_0
+  - setuptools=60.9.3=py38h578d9bd_0
+  - spades=3.15.4=h95f258a_0
+  - sqlite=3.37.0=h9cd32fc_0
+  - sysroot_linux-64=2.17=h4a8ded7_13
+  - tk=8.6.12=h27826a3_0
+  - wheel=0.37.1=pyhd8ed1ab_0
+  - xz=5.2.5=h516909a_1
+  - zlib=1.2.11=h36c2ea0_1013
+prefix: /home/patricia/miniconda3/envs/spades

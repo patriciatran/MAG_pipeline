@@ -21,6 +21,8 @@ rule spades:
         r2 = input_dir + "/{sample}_R2.fastq.gz",
     output:
         assembly = output_dir + "/{sample}/assembly.fasta"
+    conda:
+        "envs/spades.yml"
     shell:
         "spades.py -1 {input.r1} -2 {input.r2} -o {output.assembly}"
 
@@ -29,6 +31,8 @@ rule metawrap:
         assembly = "results/{sample}/assembly.fasta"
     output:
         bins = "results/{sample}/bins/"
+    conda:
+        "envs/metawrap.yml"
     shell:
         "metawrap binning -t 4 -o {output.bins} -a {input.assembly}"
 
@@ -37,6 +41,8 @@ rule drep:
         bins = "results/{sample}/bins/"
     output:
         dereplicated_bins = "results/{sample}/dereplicated_bins/"
+    conda:
+        "envs/dRep.yml"
     shell:
         """
         dRep dereplicate {input.bins} -comp 50 -sa 0.999 -nc 0.1 -g {output.dereplicated_bins} --checkM_method lineage_wf
@@ -47,6 +53,8 @@ rule checkm:
         bins = "results/{sample}/dereplicated_bins/"
     output:
         quality_summary = "results/{sample}/quality_summary.tsv"
+    conda:
+        "envs/checkM.yml"
     shell:
         "checkm lineage_wf -x fa -t 4 {input.bins} {output.quality_summary}"
 
@@ -71,6 +79,8 @@ rule gtdbtk:
         taxonomy_medium_qual = "results/{sample}/taxonomy_medium_qual.tsv",
         taxonomy_high_qual = "results/{sample}/taxonomy_high_qual.tsv",
         out_file = "results/{sample}/taxonomy.tsv"
+    conda:
+        "envs/gtdbtk-1.7.0.yml"
     shell:
         """
         gtdbtk classify_wf --genome_dir {input.medium_quality_bins} --out_dir {output.taxonomy_medium_qual}/gtdbtk --cpus 4 
