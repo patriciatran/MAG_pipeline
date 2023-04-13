@@ -22,6 +22,7 @@ rule all:
         
 # Define rules for each step in the workflow
 rule spades:
+# Description: This rules takes R1 and R2 paired FASTQ reads, assuming they are metagenomic, and assembles them using SPADES.s
     input:
         r1 = input_dir + "/{sample}_R1.fastq.gz",
         r2 = input_dir + "/{sample}_R2.fastq.gz",
@@ -30,14 +31,19 @@ rule spades:
     conda:
         "envs/spades.yml"
     params:
-        minimum_size = 2000,
+        memory = 100, #use max 600 on our server
         kmers = "33,55,77,99,127",
-        threads = 5
+        threads = 15
 
     shell:
-        "spades.py -m {params.minimum_size} -k {params.kmers}  --meta -t {params.threads} -1 {input.r1} -2 {input.r2} -o {output.assembly}"
+        """
+        spades.py -m {params.memory} -k {params.kmers} \
+        --meta -t {params.threads} -1 {input.r1} -2 {input.r2} \
+        -o {output.assembly}
+        """
 
 rule metawrap:
+# Using the assembled scaffods (reads) in the assembly,  and the reads, we will now bin them using metawrap, using 3 different softwares.
     input:
         assembly = "results/{sample}/assembly",
         r1 = input_dir + "/{sample}_R1.fastq.gz",
@@ -58,21 +64,22 @@ rule metawrap:
         """
 
 rule drep:
+# Once we have the bins, we will dereplicate them as to not have repetitive genomes.
     input:
-        bins = "results/{sample}/bins/*.fasta"
+        bins = "results/{sample}/bins/"
     output:
         dereplicated_bins = "results/{sample}/dereplicated_bins/"
     conda:
         "envs/dRep.yml"
     params:
-        completeness_min =  50 # Note that the defaut is 75
-        sa = 0.99 # ANI threshold (default is 0.99)
-        nc = 0.1 # coverage threshold (default is 0.1)
+        completeness_min =  50, # Note that the defaut is 75
+        sa = 0.99, # ANI threshold (default is 0.99)
+        nc = 0.1, # coverage threshold (default is 0.1)
         tmp_dir = "/storage1/data10/tmp" #  Important because CheckM will eat your whole /tmp folder (default) otherwise
     shell:
         """
         TMPDIR={params.tmp_dir}
-        dRep dereplicate {input.bins} \
+        dRep dereplicate {input.bins}/*.fasta \
         -comp {params.completeness_min} \
         -sa {params.sa} \
         -nc {params.nc} \
@@ -81,16 +88,30 @@ rule drep:
         """
 
 rule checkm:
+# dRep technically already applies as CheckM quality check, but  we will run that on the dereplicated bins only.
     input:
         bins = "results/{sample}/dereplicated_bins/"
     output:
-        quality_summary = "results/{sample}/quality_summary.tsv"
+        folder = "results/{sample}/checkm/"
+        quality_summary = "results/{sample}/checkm/quality_summary.tsv"
     conda:
         "envs/checkM.yml"
+    params:
+        threads = 15,
+        extension = "fa", #file extension
+        tmdir = "/storage1/data10/tmp"
+        pplacer_threads = 15
+
     shell:
-        "checkm lineage_wf -x fa -t 4 {input.bins} {output.quality_summary}"
+        """
+        checkm lineage_wf -x {params.extension} \
+         -t {params.threads} \
+         -f {output.quality_summary} \
+        {input.bins} {output.folder}
+        """
 
 rule select_quality_bins:
+# Among all the dereplicated MAGs, we'd like to know how many are medium to high--quality. See Bowers et al., 2017 Nature Biotechnology
     input:
         quality_summary = "results/{sample}/quality_summary.tsv"
     output:
@@ -98,12 +119,14 @@ rule select_quality_bins:
         high_quality_bins = "results/{sample}/high_quality_bins.txt"
     shell:
         """
-        awk '$12 >= 50' {input.quality_summary} | awk '$13 >= 90' | cut -f 1 > {output.medium_quality_bins}
-        awk '$12 >= 75' {input.quality_summary} | awk '$13 >= 90' | cut -f 1 > {output.high_quality_bins}
+        # Note that the 12th column is competeness and the 13th column is contamination. 
+        awk '$12 >= 50' {input.quality_summary} | awk '$13 < 10' | cut -f 1 > {output.medium_quality_bins}
+        awk '$12 > 90' {input.quality_summary} | awk '$13 < 5' | cut -f 1 > {output.high_quality_bins}
         """
         
 
 rule gtdbtk:
+# Now that we have th
     input:
         medium_quality_bins = "results/{sample}/medium_quality_bins.txt",
         high_quality_bins = "results/{sample}/high_quality_bins.txt"
