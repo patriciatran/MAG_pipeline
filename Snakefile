@@ -1,63 +1,79 @@
+# Define input and output files
+input_dir = "data/fastq"
+output_dir = "results"
+
+TMPDIR="/storage1/data10/tmp"
+
+#  from snakemake.io import glob_wildcards
+fastq_files = glob_wildcards(f"{input_dir}/{{sample}}_R1.fastq.gz")
+samples = list(fastq_files.sample)
+
 rule all:
     input:
-        directory("data/genomes"),
-        "data/genome_names.txt"
-
-
-rule download_ncbi_genomes:
+        # from sympy import expand
+        expand("results/{sample}/taxonomy.tsv", sample=samples)
+ 
+        
+# Define rules for each step in the workflow
+rule spades:
     input:
-        script = "code/Download-genomes.bash"
+        r1 = input_dir + "/{sample}_R1.fastq.gz",
+        r2 = input_dir + "/{sample}_R2.fastq.gz",
     output:
-        directory("data/genomes")
-        #"data/" + directory("genomes") # Note to myself: The ncbi-download-genome script will create a folder in the current directory so we can either spell it out here or cd into the right one, or move it after the script runs.
-    resources:
-        tmpdir="/storage1/data10/tmp"
-    conda:
-        "envs/ncbi-genome-download.yml"
+        assembly = output_dir + "/{sample}/assembly.fasta"
+    shell:
+        "spades.py -1 {input.r1} -2 {input.r2} -o {output.assembly}"
+
+rule metawrap:
+    input:
+        assembly = "results/{sample}/assembly.fasta"
+    output:
+        bins = "results/{sample}/bins/"
+    shell:
+        "metawrap binning -t 4 -o {output.bins} -a {input.assembly}"
+
+rule drep:
+    input:
+        bins = "results/{sample}/bins/"
+    output:
+        dereplicated_bins = "results/{sample}/dereplicated_bins/"
     shell:
         """
-        TMPDIR="{resources.tmpdir}"
-        {input.script}
-        mkdir data/genomes/
-        mv refseq/bacteria/**/*.gz data/genomes/.
+        dRep dereplicate {input.bins} -comp 50 -sa 0.999 -nc 0.1 -g {output.dereplicated_bins} --checkM_method lineage_wf
         """
 
-rule get_genome_names:
+rule checkm:
     input:
-        script = "code/Get_genome_names.bash"
+        bins = "results/{sample}/dereplicated_bins/"
     output:
-        "data/genome_names.txt"
-    params:
+        quality_summary = "results/{sample}/quality_summary.tsv"
+    shell:
+        "checkm lineage_wf -x fa -t 4 {input.bins} {output.quality_summary}"
 
+rule select_quality_bins:
+    input:
+        quality_summary = "results/{sample}/quality_summary.tsv"
+    output:
+        medium_quality_bins = "results/{sample}/medium_quality_bins.txt",
+        high_quality_bins = "results/{sample}/high_quality_bins.txt"
     shell:
         """
-        {input.script} {output}
+        awk '$12 >= 50' {input.quality_summary} | awk '$13 >= 90' | cut -f 1 > {output.medium_quality_bins}
+        awk '$12 >= 75' {input.quality_summary} | awk '$13 >= 90' | cut -f 1 > {output.high_quality_bins}
         """
+        
 
-# rule unzip_all_genomes:
-#     input:
-#         sample = "data/{sample}.gz"
-#     output:
-#         output = "data/unzipped/{sample}"
-#     shell:
-#         """
-#         tar -xvg {input.sample}
-#         """
-
-# rule copyab:
-#     input: 
-#         "a.txt"
-#     output: 
-#         "b.txt"
-#     shell:
-#         """
-#         copy {input} {output}
-#         """
-
-# rule copyac:
-#     input:
-#         "a.txt"
-#     output:
-#         # "c.txt"
-#     shell:
-#         "copy {input} {output}"
+rule gtdbtk:
+    input:
+        medium_quality_bins = "results/{sample}/medium_quality_bins.txt",
+        high_quality_bins = "results/{sample}/high_quality_bins.txt"
+    output:
+        taxonomy_medium_qual = "results/{sample}/taxonomy_medium_qual.tsv",
+        taxonomy_high_qual = "results/{sample}/taxonomy_high_qual.tsv",
+        out_file = "results/{sample}/taxonomy.tsv"
+    shell:
+        """
+        gtdbtk classify_wf --genome_dir {input.medium_quality_bins} --out_dir {output.taxonomy_medium_qual}/gtdbtk --cpus 4 
+        gtdbtk classify_wf --genome_dir {input.high_quality_bins} --out_dir {output.taxonomy_high_qual}/gtdbtk --cpus 4
+        awk -F '\t' '$8 == \"High quality\" || $8 == \"Medium quality\"' {output.taxonomy_medium_qual}/gtdbtk/gtdbtk.ar122.classification_pplacer.tsv >> {output.out_file}
+        """
