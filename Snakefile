@@ -31,7 +31,7 @@ rule assemble_reads:
     conda:
         "envs/spades.yml"
     params:
-        memory = 100, #use max 600 on our server
+        memory = 100, #use max 600 on our server, unit is Gb
         kmers = "33,55,77,99,127",
         threads = 15
 
@@ -83,7 +83,8 @@ rule refine:
 # Refine bins using dasTools. Requires to create a scaff to bin file first.
     input:
         bins = "results/{sample}/bins/",
-        assembly = "results/{sample}/assembly/contigs.fasta"
+        assembly = "results/{sample}/assembly/contigs.fasta",
+        sample_dir = "results/{sample}/"
     output:
         refined_bins_tables = directory("results/{sample}/refine_bins_tables/"),
         refined_bins = directory("results/{sample}/refine_bins_DASTool_bins/")
@@ -93,7 +94,7 @@ rule refine:
         "envs/dasTool.yml"
     shell:
         """
-        mkdir {output.refined_bins}
+        mkdir {output.refined_bins_tables}
         Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/maxbin2_bins/ > {output.refined_bins_tables}/maxbin2_scaf2bin.tsv
         Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/metabat1_bins/ > {output.refined_bins_tables}/metabat1_scaf2bin.tsv
         Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/metabat2_bins/ > {output.refined_bins_tables}/metabat2_scaf2bin.tsv
@@ -102,19 +103,22 @@ rule refine:
         -i {output.refined_bins_tables}/metabat1_scaf2bin.tsv,{output.refined_bins_tables}/metabat2_scaf2bin.tsv,{output.refined_bins_tables}/maxbin2_scaf2bin.tsv \
         -l metabat1,metabat2,maxbin2 \
         -c {input.assembly} \
-        -o {output.refined_bins} \
+        -o {input.sample_dir}/refine_bins \
         --threads {params.threads}
         """
 
 rule rename_MAGs:
 # MAGs need to be called ".fasta" instead of ".fa" for dRep to work:
     input:
-        refined_bins = "results/{sample}/refine_bins_DASTool_bins/"
+        refined_bins = "results/{sample}/refine_bins_DASTool_bins/",
+        sample_dir = "results/{sample}"
     output:
         refined_bins_renamed = directory("results/{sample}/renamed_refined_MAGS/")
     shell:
         """
-        for file in {input.refined_bins}/*.fa; do mv "$file" "${file%.fa}.fasta"; done        
+        mkdir {output.refined_bins_renamed}
+        rename 's/.fa/.fasta/' {input.refined_bins}/*.fa
+        mv {input.refined_bins}/*.fasta {output.refined_bins_renamed}/.      
         """
 
 rule dereplicate:
@@ -122,7 +126,8 @@ rule dereplicate:
     input:
         refined_bins_renamed = "results/{sample}/renamed_refined_MAGS/"
     output:
-        dereplicated_bins = directory("results/{sample}/dereplicated_bins/")
+        dereplicated_bins = directory("results/{sample}/dereplicated_bins/"),
+        dereplicated_bins_folder = directory("results/{sample}/dereplicated_bins/dereplicated_genomes/")
     conda:
         "envs/dRep.yml"
     params:
@@ -135,18 +140,17 @@ rule dereplicate:
         TMPDIR={params.tmp_dir}
         dRep dereplicate \
         {output.dereplicated_bins} \
-        -g {input.refined_bins_renamed}/*.fa \
+        -g {input.refined_bins_renamed}/*.fasta \
         -comp {params.completeness_min} \
         -sa {params.sa} \
         -nc {params.nc} \
-        -g {output.dereplicated_bins} \
         --checkM_method lineage_wf
         """
 
 rule quality_check:
-# dRep technically already applies as CheckM quality check, but  we will run that on the dereplicated bins only.
+# dRep technically already applies a CheckM quality check, but  we will run that on the dereplicated bins only.
     input:
-        bins = "results/{sample}/dereplicated_bins/"
+        bins = "results/{sample}/dereplicated_bins/dereplicated_genomes/"
     output:
         folder = directory("results/{sample}/checkm/"),
         quality_summary = "results/{sample}/checkm/quality_summary.tsv"
@@ -154,15 +158,16 @@ rule quality_check:
         "envs/checkM.yml"
     params:
         threads = 15,
-        extension = "fa", #file extension
-        tmdir = "/storage1/data10/tmp",
+        extension = "fasta", #file extension
+        tmpdir = "/storage1/data10/tmp",
         pplacer_threads = 15
-
     shell:
         """
         checkm lineage_wf -x {params.extension} \
-         -t {params.threads} \
-         -f {output.quality_summary} \
+        -t {params.threads} \
+        --tab_table \
+        -f {output.quality_summary} \
+        --tmpdir {params.tmpdir} \
         {input.bins} {output.folder}
         """
 
@@ -180,9 +185,8 @@ rule select_quality_bins:
         awk '$12 > 90' {input.quality_summary} | awk '$13 < 5' | cut -f 1 > {output.high_quality_bins}
         """
         
-
 rule assign_taxonomy:
-# Now that we have th
+# Now that we have the final bin set, let's assign their taxonomy.
     input:
         medium_quality_bins = "results/{sample}/medium_quality_bins.txt",
         high_quality_bins = "results/{sample}/high_quality_bins.txt"
@@ -194,6 +198,7 @@ rule assign_taxonomy:
         "envs/gtdbtk-1.7.0.yml"
     shell:
         """
+        mkdir {output.final_bin_dir}
         gtdbtk classify_wf --genome_dir {input.medium_quality_bins} --out_dir {output.taxonomy_medium_qual}/gtdbtk --cpus 4 
         gtdbtk classify_wf --genome_dir {input.high_quality_bins} --out_dir {output.taxonomy_high_qual}/gtdbtk --cpus 4
         awk -F '\t' '$8 == \"High quality\" || $8 == \"Medium quality\"' {output.taxonomy_medium_qual}/gtdbtk/gtdbtk.ar122.classification_pplacer.tsv >> {output.out_file}
