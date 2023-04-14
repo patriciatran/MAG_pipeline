@@ -45,7 +45,8 @@ rule spades:
 rule unzip_reads:
     input: 
         r1 = input_dir + "/{sample}_R1.fastq.gz",
-        r2 = input_dir + "/{sample}_R2.fastq.gz"
+        r2 = input_dir + "/{sample}_R2.fastq.gz",
+        assembly = output_dir + "/{sample}/assembly"
     output:
         r1_unzip =  input_dir + "/unzipped/{sample}_1.fastq",
         r2_unzip =  input_dir + "/unzipped/{sample}_2.fastq"
@@ -84,7 +85,8 @@ rule refine_MAGS:
         bins = "results/{sample}/bins/",
         assembly = "results/{sample}/assembly/contigs.fasta"
     output:
-        refined_bins = "results/{sample}/refine_bins/"
+        refined_bins_tables = "results/{sample}/refine_bins_tables/",
+        refined_bins = "results/{sample}/refine_bins_DASTool_bins/"
     params:
         threads = 15
     conda:
@@ -92,22 +94,33 @@ rule refine_MAGS:
     shell:
         """
         mkdir {output.refined_bins}
-        Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/maxbin2_bins/ > {output.refined_bins}/maxbin2_scaf2bin.tsv
-        Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/metabat1_bins/ > {output.refined_bins}/metabat1_scaf2bin.tsv
-        Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/metabat2_bins/ > {output.refined_bins}/metabat2_scaf2bin.tsv
+        Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/maxbin2_bins/ > {output.refined_bins_tables}/maxbin2_scaf2bin.tsv
+        Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/metabat1_bins/ > {output.refined_bins_tables}/metabat1_scaf2bin.tsv
+        Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/metabat2_bins/ > {output.refined_bins_tables}/metabat2_scaf2bin.tsv
         
         DAS_Tool --write_bins 1 --write_bin_evals 1 --create_plots 1 \
-        -i {output.refined_bins}/metabat1_scaf2bin.tsv,{output.refined_bins}/metabat2_scaf2bin.tsv,{output.refined_bins}/maxbin2_scaf2bin.tsv \
+        -i {output.refined_bins_tables}/metabat1_scaf2bin.tsv,{output.refined_bins_tables}/metabat2_scaf2bin.tsv,{output.refined_bins_tables}/maxbin2_scaf2bin.tsv \
         -l metabat1,metabat2,maxbin2 \
         -c {input.assembly} \
         -o {output.refined_bins} \
         --threads {params.threads}
         """
 
+rule rename_MAG:
+# MAGs need to be called ".fasta" instead of ".fa" for dRep to work:
+    input:
+        refined_bins = "results/{sample}/refine_bins_DASTool_bins/"
+    output:
+        refined_bins_renamed = "results/{sample}/renamed_refined_MAGS/"
+    shell:
+        """
+        for file in {input.refined_bins}/*.fa; do mv "$file" "${file%.fa}.fasta"; done        
+        """
+
 rule drep:
 # Once we have the bins, we will dereplicate them as to not have repetitive genomes.
     input:
-        refined_bins = "results/{sample}/refine_bins/"
+        refined_bins_renamed = "results/{sample}/renamed_refined_MAGS/"
     output:
         dereplicated_bins = "results/{sample}/dereplicated_bins/"
     conda:
@@ -120,7 +133,9 @@ rule drep:
     shell:
         """
         TMPDIR={params.tmp_dir}
-        dRep dereplicate {input.refined_bins}/*.fasta \
+        dRep dereplicate \
+        {output.dereplicated_bins} \
+        -g {input.refined_bins_renamed}/*.fa \
         -comp {params.completeness_min} \
         -sa {params.sa} \
         -nc {params.nc} \
