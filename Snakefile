@@ -177,29 +177,36 @@ rule select_quality_bins:
         quality_summary = "results/{sample}/checkm/quality_summary.tsv"
     output:
         medium_quality_bins = "results/{sample}/medium_quality_bins.txt",
-        high_quality_bins = "results/{sample}/high_quality_bins.txt"
+        high_quality_bins = "results/{sample}/high_quality_bins.txt",
+        final_bin_set = "results/{sample}/final_bin_set.txt"
     shell:
         """
         # Note that the 12th column is competeness and the 13th column is contamination. 
-        awk '$12 >= 50' {input.quality_summary} | awk '$13 < 10' | cut -f 1 > {output.medium_quality_bins}
-        awk '$12 > 90' {input.quality_summary} | awk '$13 < 5' | cut -f 1 > {output.high_quality_bins}
+        awk -F "\t" '{{ if(($12 >= 50) && ($13 <10)) {{print}} }}' {input.quality_summary} | cut -f 1 > {output.medium_quality_bins}
+        awk -F "\t" '{{ if(($12 > 90) && ($13 <5)) {{print}} }}' {input.quality_summary} | cut -f 1 > {output.high_quality_bins}
+        cat {output.medium_quality_bins} {output.high_quality_bins} >> {output.final_bin_set}
         """
         
 rule assign_taxonomy:
 # Now that we have the final bin set, let's assign their taxonomy.
     input:
-        medium_quality_bins = "results/{sample}/medium_quality_bins.txt",
-        high_quality_bins = "results/{sample}/high_quality_bins.txt"
+        bins = "results/{sample}/dereplicated_bins/dereplicated_genomes/",
+        final_bin_set = "results/{sample}/final_bin_set.txt"
     output:
-        taxonomy_medium_qual = "results/{sample}/taxonomy_medium_qual.tsv",
-        taxonomy_high_qual = "results/{sample}/taxonomy_high_qual.tsv",
-        out_file = "results/{sample}/taxonomy.tsv"
+        out_file = "results/{sample}/taxonomy.tsv",
+        out_dir =  directory("results/{sample}/gtdbtk/")
     conda:
         "envs/gtdbtk-1.7.0.yml"
+    params:
+        ext = "fasta",
+        threads = 15
     shell:
         """
-        mkdir {output.final_bin_dir}
-        gtdbtk classify_wf --genome_dir {input.medium_quality_bins} --out_dir {output.taxonomy_medium_qual}/gtdbtk --cpus 4 
-        gtdbtk classify_wf --genome_dir {input.high_quality_bins} --out_dir {output.taxonomy_high_qual}/gtdbtk --cpus 4
-        awk -F '\t' '$8 == \"High quality\" || $8 == \"Medium quality\"' {output.taxonomy_medium_qual}/gtdbtk/gtdbtk.ar122.classification_pplacer.tsv >> {output.out_file}
+        gtdbtk classify_wf --genome_dir {input.bins} \
+        -x {params.ext} --cpus {params.threads} \
+        --out_dir {output.out_dir}
+
+        grep -f {input.final_bin_set} {output.out_dir}/gtdbtk.ar122.summary.tsv >> {output.out_file}
+        grep -f {input.final_bin_set} {output.out_dir}/gtdbtk.bac120.summary.tsv >> {output.out_file}
+
         """
