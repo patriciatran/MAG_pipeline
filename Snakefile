@@ -42,25 +42,40 @@ rule spades:
         -o {output.assembly}
         """
 
+rule unzip_reads:
+    input: 
+        r1 = input_dir + "/{sample}_R1.fastq.gz",
+        r2 = input_dir + "/{sample}_R2.fastq.gz"
+    output:
+        r1_unzip =  input_dir + "/unzipped/{sample}_1.fastq",
+        r2_unzip =  input_dir + "/unzipped/{sample}_2.fastq"
+    shell:
+        """
+        gzip -c -d {input.r1} > {output.r1_unzip}
+        gzip -c -d {input.r1} > {output.r2_unzip}
+        """
+
 rule metawrap:
 # Using the assembled scaffods (reads) in the assembly,  and the reads, we will now bin them using metawrap, using 3 different softwares.
     input:
-        assembly = "results/{sample}/assembly",
-        r1 = input_dir + "/{sample}_R1.fastq.gz",
-        r2 = input_dir + "/{sample}_R2.fastq.gz"
+        assembly = "results/{sample}/assembly/contigs.fasta",
+        r1_unzip =  input_dir + "/unzipped/{sample}_1.fastq",
+        r2_unzip =  input_dir + "/unzipped/{sample}_2.fastq"
     output:
         bins = "results/{sample}/bins/"
     conda:
         "envs/metawrap_env_2.yml"
     params:
-        threads = 5
+        threads = 10,
+        tmpdir = "storage1/data10/tmp"
 
     shell:
         """
+        TMPDIR={params.tmpdir}
         metawrap binning -o {output.bins} -a {input.assembly} \
         -t {params.threads} \
         --metabat2 --metabat1 --maxbin2 \
-        -1 {input.R1} -2 {input.R2}
+        {input.r1_unzip} {input.r2_unzip}
         """
 
 rule drep:
@@ -92,14 +107,14 @@ rule checkm:
     input:
         bins = "results/{sample}/dereplicated_bins/"
     output:
-        folder = "results/{sample}/checkm/"
+        folder = "results/{sample}/checkm/",
         quality_summary = "results/{sample}/checkm/quality_summary.tsv"
     conda:
         "envs/checkM.yml"
     params:
         threads = 15,
         extension = "fa", #file extension
-        tmdir = "/storage1/data10/tmp"
+        tmdir = "/storage1/data10/tmp",
         pplacer_threads = 15
 
     shell:
@@ -113,7 +128,7 @@ rule checkm:
 rule select_quality_bins:
 # Among all the dereplicated MAGs, we'd like to know how many are medium to high--quality. See Bowers et al., 2017 Nature Biotechnology
     input:
-        quality_summary = "results/{sample}/quality_summary.tsv"
+        quality_summary = "results/{sample}/checkm/quality_summary.tsv"
     output:
         medium_quality_bins = "results/{sample}/medium_quality_bins.txt",
         high_quality_bins = "results/{sample}/high_quality_bins.txt"
