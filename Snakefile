@@ -21,13 +21,13 @@ rule all:
         expand("results/{sample}/taxonomy.tsv", sample=samples)
         
 # Define rules for each step in the workflow
-rule spades:
+rule assemble_reads:
 # Description: This rules takes R1 and R2 paired FASTQ reads, assuming they are metagenomic, and assembles them using SPADES.s
     input:
         r1 = input_dir + "/{sample}_R1.fastq.gz",
         r2 = input_dir + "/{sample}_R2.fastq.gz",
     output:
-        assembly = output_dir + "/{sample}/assembly"
+        assembly = directory(output_dir + "/{sample}/assembly")
     conda:
         "envs/spades.yml"
     params:
@@ -56,14 +56,14 @@ rule unzip_reads:
         gzip -c -d {input.r1} > {output.r2_unzip}
         """
 
-rule metawrap:
+rule bin:
 # Using the assembled scaffods (reads) in the assembly,  and the reads, we will now bin them using metawrap, using 3 different softwares.
     input:
         assembly = "results/{sample}/assembly/contigs.fasta",
         r1_unzip =  input_dir + "/unzipped/{sample}_1.fastq",
         r2_unzip =  input_dir + "/unzipped/{sample}_2.fastq"
     output:
-        bins = "results/{sample}/bins/"
+        bins = directory("results/{sample}/bins/")
     conda:
         "envs/metawrap_env_2.yml"
     params:
@@ -79,14 +79,14 @@ rule metawrap:
         {input.r1_unzip} {input.r2_unzip}
         """
 
-rule refine_MAGS:
+rule refine:
 # Refine bins using dasTools. Requires to create a scaff to bin file first.
     input:
         bins = "results/{sample}/bins/",
         assembly = "results/{sample}/assembly/contigs.fasta"
     output:
-        refined_bins_tables = "results/{sample}/refine_bins_tables/",
-        refined_bins = "results/{sample}/refine_bins_DASTool_bins/"
+        refined_bins_tables = directory("results/{sample}/refine_bins_tables/"),
+        refined_bins = directory("results/{sample}/refine_bins_DASTool_bins/")
     params:
         threads = 15
     conda:
@@ -106,23 +106,23 @@ rule refine_MAGS:
         --threads {params.threads}
         """
 
-rule rename_MAG:
+rule rename_MAGs:
 # MAGs need to be called ".fasta" instead of ".fa" for dRep to work:
     input:
         refined_bins = "results/{sample}/refine_bins_DASTool_bins/"
     output:
-        refined_bins_renamed = "results/{sample}/renamed_refined_MAGS/"
+        refined_bins_renamed = directory("results/{sample}/renamed_refined_MAGS/")
     shell:
         """
         for file in {input.refined_bins}/*.fa; do mv "$file" "${file%.fa}.fasta"; done        
         """
 
-rule drep:
+rule dereplicate:
 # Once we have the bins, we will dereplicate them as to not have repetitive genomes.
     input:
         refined_bins_renamed = "results/{sample}/renamed_refined_MAGS/"
     output:
-        dereplicated_bins = "results/{sample}/dereplicated_bins/"
+        dereplicated_bins = directory("results/{sample}/dereplicated_bins/")
     conda:
         "envs/dRep.yml"
     params:
@@ -143,12 +143,12 @@ rule drep:
         --checkM_method lineage_wf
         """
 
-rule checkm:
+rule quality_check:
 # dRep technically already applies as CheckM quality check, but  we will run that on the dereplicated bins only.
     input:
         bins = "results/{sample}/dereplicated_bins/"
     output:
-        folder = "results/{sample}/checkm/",
+        folder = directory("results/{sample}/checkm/"),
         quality_summary = "results/{sample}/checkm/quality_summary.tsv"
     conda:
         "envs/checkM.yml"
@@ -181,7 +181,7 @@ rule select_quality_bins:
         """
         
 
-rule gtdbtk:
+rule assign_taxonomy:
 # Now that we have th
     input:
         medium_quality_bins = "results/{sample}/medium_quality_bins.txt",
