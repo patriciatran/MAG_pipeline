@@ -1,10 +1,10 @@
 # About:
-I built this snakemake pipeline to showcase how it can be used to take FASTQ files all the way into a set of dereplicated MAGs.
+I built this snakemake pipeline to showcase how FASTQ files can be taken all the way into a set of good-quality dereplicated MAGs.
 
 The general steps  are:
 - Assembled the `fastq` reads using `SPADES`
 - Bin the MAGs using `metawrap`
-- Refing MAGs using `dasTool`
+- Refining MAGs using `dasTool`
 - Deplicate the MAGs (if relevant) using `dRep`.
 - Determine MAG quality using `checkM`
 - Select only MIMAG quality-standard MAGs for further analyses  (e.g. >50% complete, <10% contamination).
