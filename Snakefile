@@ -66,7 +66,7 @@ rule metawrap:
     conda:
         "envs/metawrap_env_2.yml"
     params:
-        threads = 10,
+        threads = 15,
         tmpdir = "storage1/data10/tmp"
 
     shell:
@@ -74,14 +74,40 @@ rule metawrap:
         TMPDIR={params.tmpdir}
         metawrap binning -o {output.bins} -a {input.assembly} \
         -t {params.threads} \
-        --metabat2 --metabat1 --maxbin2 \
+        --metabat1 --metabat2 --maxbin2 \
         {input.r1_unzip} {input.r2_unzip}
+        """
+
+rule refine_MAGS:
+# Refine bins using dasTools. Requires to create a scaff to bin file first.
+    input:
+        bins = "results/{sample}/bins/",
+        assembly = "results/{sample}/assembly/contigs.fasta"
+    output:
+        refined_bins = "results/{sample}/refine_bins/"
+    params:
+        threads = 15
+    conda:
+        "envs/dasTool.yml"
+    shell:
+        """
+        mkdir {output.refined_bins}
+        Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/maxbin2_bins/ > {output.refined_bins}/maxbin2_scaf2bin.tsv
+        Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/metabat1_bins/ > {output.refined_bins}/metabat1_scaf2bin.tsv
+        Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/metabat2_bins/ > {output.refined_bins}/metabat2_scaf2bin.tsv
+        
+        DAS_Tool --write_bins 1 --write_bin_evals 1 --create_plots 1 \
+        -i {output.refined_bins}/metabat1_scaf2bin.tsv,{output.refined_bins}/metabat2_scaf2bin.tsv,{output.refined_bins}/maxbin2_scaf2bin.tsv \
+        -l metabat1,metabat2,maxbin2 \
+        -c {input.assembly} \
+        -o {output.refined_bins} \
+        --threads {params.threads}
         """
 
 rule drep:
 # Once we have the bins, we will dereplicate them as to not have repetitive genomes.
     input:
-        bins = "results/{sample}/bins/"
+        refined_bins = "results/{sample}/refine_bins/"
     output:
         dereplicated_bins = "results/{sample}/dereplicated_bins/"
     conda:
@@ -94,7 +120,7 @@ rule drep:
     shell:
         """
         TMPDIR={params.tmp_dir}
-        dRep dereplicate {input.bins}/*.fasta \
+        dRep dereplicate {input.refined_bins}/*.fasta \
         -comp {params.completeness_min} \
         -sa {params.sa} \
         -nc {params.nc} \
