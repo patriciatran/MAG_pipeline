@@ -1,0 +1,61 @@
+name: gtdbtk-2.2.6
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+  - ursky
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=2_gnu
+  - boost=1.70.0=py38h9de70de_1
+  - boost-cpp=1.70.0=h7b93d67_3
+  - bzip2=1.0.8=h7f98852_4
+  - ca-certificates=2022.12.7=ha878542_0
+  - capnproto=0.10.2=h6239696_0
+  - colorama=0.4.6=pyhd8ed1ab_0
+  - dendropy=4.5.2=pyh3252c3a_0
+  - fastani=1.32=he1c1bb9_0
+  - fasttree=2.1.11=hec16e2b_1
+  - gsl=2.7=he838d99_0
+  - gtdbtk=2.2.6=pyhdfd78af_1
+  - hmmer=3.3.2=h87f3376_2
+  - icu=67.1=he1b5a44_0
+  - ld_impl_linux-64=2.40=h41732ed_0
+  - libblas=3.9.0=16_linux64_openblas
+  - libcblas=3.9.0=16_linux64_openblas
+  - libffi=3.4.2=h7f98852_5
+  - libgcc-ng=12.2.0=h65d4601_19
+  - libgfortran-ng=12.2.0=h69a702a_19
+  - libgfortran5=12.2.0=h337968e_19
+  - libgomp=12.2.0=h65d4601_19
+  - liblapack=3.9.0=16_linux64_openblas
+  - libnsl=2.0.0=h7f98852_0
+  - libopenblas=0.3.21=pthreads_h78a6416_3
+  - libsqlite=3.40.0=h753d276_0
+  - libstdcxx-ng=12.2.0=h46fd767_19
+  - libuuid=2.38.1=h0b41bf4_0
+  - libzlib=1.2.13=h166bdaf_4
+  - lz4-c=1.9.3=h9c3ff4c_1
+  - mash=2.3=hd3113c8_4
+  - ncurses=6.3=h27087fc_1
+  - numpy=1.24.2=py38h10c12cc_0
+  - openssl=1.1.1t=h0b41bf4_0
+  - pip=23.1=pyhd8ed1ab_0
+  - pplacer=1.1.alpha19=h9ee0642_2
+  - prodigal=2.6.3=hec16e2b_4
+  - pydantic=1.10.7=py38h1de0b5d_0
+  - python=3.8.15=h257c98d_0_cpython
+  - python_abi=3.8=3_cp38
+  - readline=8.2=h8228510_1
+  - setuptools=67.6.1=pyhd8ed1ab_0
+  - tk=8.6.12=h27826a3_0
+  - tqdm=4.65.0=pyhd8ed1ab_1
+  - typing-extensions=4.5.0=hd8ed1ab_0
+  - typing_extensions=4.5.0=pyha770c72_0
+  - wheel=0.40.0=pyhd8ed1ab_0
+  - xz=5.2.6=h166bdaf_0
+  - zlib=1.2.13=h166bdaf_4
+  - zstd=1.4.9=ha95c52a_0
+variables:
+  GTDBTK_DATA_PATH: /storage1/data10/databases/release207_v2/
+prefix: /home/patricia/miniconda3/envs/gtdbtk-2.2.6

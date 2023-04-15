@@ -196,11 +196,11 @@ rule assign_taxonomy:
         out_file = "results/{sample}/taxonomy.tsv",
         out_dir =  directory("results/{sample}/gtdbtk/")
     conda:
-        "envs/gtdbtk-1.7.0.yml"
+        "envs/gtdbtk-2.2.6.yml"
     params:
         ext = "fasta",
-        threads = 15
-        db_path = "/storage1/databases/GTDBTK_DB/release202/"
+        threads = 15,
+        db_path = "/storage1/data10/databases/release207_v2/"
     shell:
         """
         GTDBTK_DATA_PATH={params.db_path}
