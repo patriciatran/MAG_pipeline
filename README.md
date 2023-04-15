@@ -26,5 +26,9 @@ This pipeline exists because of the folks making these programs available, pleas
 - CheckM: https://github.com/Ecogenomics/CheckM 
 - GTDBTK: https://github.com/Ecogenomics/GTDBTk
 
+- Snakemake: https://snakemake.readthedocs.io/en/stable/
+- conda/anaconda: https://docs.anaconda.com/anaconda/user-guide/faq/
+- mamba: https://github.com/mamba-org/mamba
+
 # Further Reading:
 MIMAG Standards: https://www.nature.com/articles/nbt.3893

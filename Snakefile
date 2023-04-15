@@ -200,8 +200,11 @@ rule assign_taxonomy:
     params:
         ext = "fasta",
         threads = 15
+        db_path = "/storage1/databases/GTDBTK_DB/release202/"
     shell:
         """
+        GTDBTK_DATA_PATH={params.db_path}
+
         gtdbtk classify_wf --genome_dir {input.bins} \
         -x {params.ext} --cpus {params.threads} \
         --out_dir {output.out_dir}
@@ -209,4 +212,5 @@ rule assign_taxonomy:
         grep -f {input.final_bin_set} {output.out_dir}/gtdbtk.ar122.summary.tsv >> {output.out_file}
         grep -f {input.final_bin_set} {output.out_dir}/gtdbtk.bac120.summary.tsv >> {output.out_file}
 
+        uniq {output.out_file} >> {output.out_file}
         """
