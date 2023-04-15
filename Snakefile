@@ -205,12 +205,14 @@ rule assign_taxonomy:
         """
         GTDBTK_DATA_PATH={params.db_path}
 
-        gtdbtk classify_wf --genome_dir {input.bins} \
+        gtdbtk classify_wf --skip-ani-screen \
+        --genome_dir {input.bins} \
+        --pplacer_cpus {params.threads} \
         -x {params.ext} --cpus {params.threads} \
         --out_dir {output.out_dir}
 
-        grep -f {input.final_bin_set} {output.out_dir}/gtdbtk.ar122.summary.tsv >> {output.out_file}
-        grep -f {input.final_bin_set} {output.out_dir}/gtdbtk.bac120.summary.tsv >> {output.out_file}
+        grep -f {input.final_bin_set} {output.out_dir}/gtdbtk.ar53.markers_summary.tsv >> {output.out_file}
+        grep -f {input.final_bin_set} {output.out_dir}/gtdbtk.bac120.markers_summary.tsv >> {output.out_file}
 
         uniq {output.out_file} >> {output.out_file}
         """
