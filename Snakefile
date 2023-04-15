@@ -174,23 +174,30 @@ rule quality_check:
 rule select_quality_bins:
 # Among all the dereplicated MAGs, we'd like to know how many are medium to high--quality. See Bowers et al., 2017 Nature Biotechnology
     input:
-        quality_summary = "results/{sample}/checkm/quality_summary.tsv"
+        quality_summary = "results/{sample}/checkm/quality_summary.tsv",
+        bin_folder = "results/{sample}/dereplicated_bins/dereplicated_genomes"
     output:
         medium_quality_bins = "results/{sample}/medium_quality_bins.txt",
         high_quality_bins = "results/{sample}/high_quality_bins.txt",
-        final_bin_set = "results/{sample}/final_bin_set.txt"
+        final_bin_set = "results/{sample}/final_bin_set.txt",
+        final_bin_set_edited = "results/{sample}/final_bin_set.edited.sh",
+        final_bin_folder = directory("results/{sample}/final_bin_set/")
     shell:
         """
         # Note that the 12th column is competeness and the 13th column is contamination. 
         awk -F "\t" '{{ if(($12 >= 50) && ($13 <10)) {{print}} }}' {input.quality_summary} | cut -f 1 > {output.medium_quality_bins}
         awk -F "\t" '{{ if(($12 > 90) && ($13 <5)) {{print}} }}' {input.quality_summary} | cut -f 1 > {output.high_quality_bins}
         cat {output.medium_quality_bins} {output.high_quality_bins} >> {output.final_bin_set}
+
+        sed -e 's/^/cp /' {output.final_bin_set} > {output.final_bin_set_edited}
+        awk 'NF{{print $0 " {{output.file_bin_folder}}"}}' {output.final_bin_set_edited}
+        bash {output.final_bin_set_edited}
         """
         
 rule assign_taxonomy:
 # Now that we have the final bin set, let's assign their taxonomy.
     input:
-        bins = "results/{sample}/dereplicated_bins/dereplicated_genomes/",
+        bins = "results/{sample}/final_bin_set/",
         final_bin_set = "results/{sample}/final_bin_set.txt"
     output:
         out_file = "results/{sample}/taxonomy.tsv",
@@ -211,8 +218,5 @@ rule assign_taxonomy:
         -x {params.ext} --cpus {params.threads} \
         --out_dir {output.out_dir}
 
-        grep -f {input.final_bin_set} {output.out_dir}/gtdbtk.ar53.markers_summary.tsv >> {output.out_file}
-        grep -f {input.final_bin_set} {output.out_dir}/gtdbtk.bac120.markers_summary.tsv >> {output.out_file}
-
-        uniq {output.out_file} >> {output.out_file}
+        grep -f {input.final_bin_set} {output.out_dir}/gtdbtk/classify/*.summary.tsv >> {output.out_file}
         """
