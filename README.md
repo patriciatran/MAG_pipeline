@@ -1,6 +1,8 @@
 # About:
 I built this snakemake pipeline to showcase how FASTQ files can be taken all the way into a set of good-quality dereplicated MAGs.
 
+![MAG pipeline logo](https://github.com/patriciatran/MAG_pipeline/blob/main/visuals/MAG_pipeline_logo.png)
+
 The general steps  are:
 - Assembled the `fastq` reads using `SPADES`
 - Bin the MAGs using `metawrap`
