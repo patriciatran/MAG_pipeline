@@ -33,7 +33,7 @@ rule assemble_reads:
     params:
         memory = 100, #use max 600 on our server, unit is Gb
         kmers = "33,55,77,99,127",
-        threads = 15
+        threads = 20
 
     shell:
         """
@@ -67,7 +67,7 @@ rule bin:
     conda:
         "envs/metawrap_env_2.yml"
     params:
-        threads = 15,
+        threads = 20,
         tmpdir = "storage1/data10/tmp"
 
     shell:
@@ -89,7 +89,7 @@ rule refine:
         refined_bins_tables = directory("results/{sample}/refine_bins_tables/"),
         refined_bins = directory("results/{sample}/refine_bins_DASTool_bins/")
     params:
-        threads = 15
+        threads = 20
     conda:
         "envs/dasTool.yml"
     shell:
@@ -157,10 +157,10 @@ rule quality_check:
     conda:
         "envs/checkM.yml"
     params:
-        threads = 15,
+        threads = 20,
         extension = "fasta", #file extension
         tmpdir = "/storage1/data10/tmp",
-        pplacer_threads = 15
+        pplacer_threads = 20
     shell:
         """
         checkm lineage_wf -x {params.extension} \
@@ -175,30 +175,40 @@ rule select_quality_bins:
 # Among all the dereplicated MAGs, we'd like to know how many are medium to high--quality. See Bowers et al., 2017 Nature Biotechnology
     input:
         quality_summary = "results/{sample}/checkm/quality_summary.tsv",
-        bin_folder = "results/{sample}/dereplicated_bins/dereplicated_genomes"
     output:
         medium_quality_bins = "results/{sample}/medium_quality_bins.txt",
         high_quality_bins = "results/{sample}/high_quality_bins.txt",
         final_bin_set = "results/{sample}/final_bin_set.txt",
-        final_bin_set_edited = "results/{sample}/final_bin_set.edited.sh",
-        final_bin_folder = directory("results/{sample}/final_bin_set/")
+        final_bin_set_unique = "results/{sample}/final_bin_set_unique.txt"
     shell:
         """
         # Note that the 12th column is competeness and the 13th column is contamination. 
         awk -F "\t" '{{ if(($12 >= 50) && ($13 <10)) {{print}} }}' {input.quality_summary} | cut -f 1 > {output.medium_quality_bins}
         awk -F "\t" '{{ if(($12 > 90) && ($13 <5)) {{print}} }}' {input.quality_summary} | cut -f 1 > {output.high_quality_bins}
-        cat {output.medium_quality_bins} {output.high_quality_bins} >> {output.final_bin_set}
+        cat {output.medium_quality_bins} {output.high_quality_bins} > {output.final_bin_set}
+        sort {output.final_bin_set} | uniq > {output.final_bin_set_unique}
+        """
 
-        sed -e 's/^/cp /' {output.final_bin_set} > {output.final_bin_set_edited}
-        awk 'NF{{print $0 " {{output.file_bin_folder}}"}}' {output.final_bin_set_edited}
-        bash {output.final_bin_set_edited}
+rule copy_final_bins_over:
+    input:
+        bin_folder = "results/{sample}/dereplicated_bins/dereplicated_genomes/",
+        final_bin_set_unique = "results/{sample}/final_bin_set_unique.txt"
+    output:
+        final_bin_folder = directory("results/{sample}/final_bin_set/"),
+        copy_script = "results/{sample}/copy_final_bin_set.sh"
+    shell:
+        """
+        mkdir {output.final_bin_folder}
+        sed -e 's|^|cp {input.bin_folder}/|g' {input.final_bin_set_unique} > {output.copy_script}
+        sed -i 's|$|.fasta {output.final_bin_folder}/.|g' {output.copy_script}
+        bash {output.copy_script}
         """
         
 rule assign_taxonomy:
 # Now that we have the final bin set, let's assign their taxonomy.
     input:
         bins = "results/{sample}/final_bin_set/",
-        final_bin_set = "results/{sample}/final_bin_set.txt"
+        final_bin_set_unique = "results/{sample}/final_bin_set_unique.txt"
     output:
         out_file = "results/{sample}/taxonomy.tsv",
         out_dir =  directory("results/{sample}/gtdbtk/")
@@ -206,7 +216,7 @@ rule assign_taxonomy:
         "envs/gtdbtk-2.2.6.yml"
     params:
         ext = "fasta",
-        threads = 15,
+        threads = 20,
         db_path = "/storage1/data10/databases/release207_v2/"
     shell:
         """
@@ -218,5 +228,5 @@ rule assign_taxonomy:
         -x {params.ext} --cpus {params.threads} \
         --out_dir {output.out_dir}
 
-        grep -f {input.final_bin_set} {output.out_dir}/gtdbtk/classify/*.summary.tsv >> {output.out_file}
+        grep -f {input.final_bin_set_unique} {output.out_dir}/gtdbtk/classify/*.summary.tsv >> {output.out_file}
         """
