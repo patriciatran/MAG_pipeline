@@ -1,15 +1,17 @@
 # (c) Patricia Tran
 # About: This is a snakemake pipeline that will take your FASTQ reads and turn them into a set medium and high quality dereplicated MAGs, with taxonomy.
 
-### Workflow starts below ###
+# Instructions:
+# Change lines below to define input and output folders.
+# Change individual settings for each step are in the "params" section of each "rule"
 
-# Define input and output files
+# Define input and output folders - Users, change this.
 input_dir = "data/fastq"
 output_dir = "results"
 
 TMPDIR="/storage1/data10/tmp"
 
-# from snakemake.io import glob_wildcards
+# from snakemake.io import glob_wildcards, for troubleshooting.
 # Double brackets in {{sample}} for subfolders
 fastq_files = glob_wildcards(f"{input_dir}/{{sample}}_R1.fastq.gz")
 samples = list(fastq_files.sample)
@@ -120,14 +122,51 @@ rule rename_MAGs:
         rename 's/.fa/.fasta/' {input.refined_bins}/*.fa
         mv {input.refined_bins}/*.fasta {output.refined_bins_renamed}/.      
         """
+rule quality_check:
+#Run checkm prior to running dRep because there is no way to set a tmp directory in dRep only. 
+#We can then provide the .tsv file to dRep in the next step
+     input:
+         refined_bins_renamed = "results/{sample}/renamed_refined_MAGS/"
+     output:
+         folder = directory("results/{sample}/checkm/"),
+         quality_summary = "results/{sample}/checkm/quality_summary.tsv",
+         quality_summary_dRep = "results/{sample}/checkm/quality_summary.csv"
+     conda:
+         "envs/checkM.yml"
+     params:
+         threads = 20,
+         extension = "fa", #file extension
+         tmpdir = "/storage1/data10/tmp",
+         pplacer_threads = 20
+     shell:
+        """
+        checkm lineage_wf -x {params.extension} \
+        -t {params.threads} \
+        --tab_table \
+        -f {output.quality_summary} \
+        --tmpdir {params.tmpdir} \
+        {input.refined_bins_renamed} {output.folder}
+
+        # There are a few edits to the TSV file to be done --> convert to a CSV file, change the checkm headers Bin.Id to genome, Completeness to completeness, and Contamination to contamination
+        cp {output.quality_summary} {output.quality_summary_dRep}
+        sed -i 's|Bin Id|genome|g' {output.quality_summary_dRep}
+        sed -i 's|Completeness|completeness|g' {output.quality_summary_dRep} 
+        sed -i 's|Contamination|contamination|g' {output.quality_summary_dRep} 
+        sed -i 's|\t|,|g' {output.quality_summary_dRep}
+
+        # Finally, we need to add the file extension to the first MAG names in the first column:
+        awk -F "," '$1=$1".fasta"' {output.quality_summary_dRep}
+        """
 
 rule dereplicate:
-# Once we have the bins, we will dereplicate them as to not have repetitive genomes.
+# Once we have the bins, we will dereplicate them as to not have repetitive genomes. They need to be named ".fasta"
     input:
-        refined_bins_renamed = "results/{sample}/renamed_refined_MAGS/"
+        refined_bins_renamed = "results/{sample}/renamed_refined_MAGS/",
+        quality_summary_dRep = "results/{sample}/checkm/quality_summary.csv"
     output:
         dereplicated_bins = directory("results/{sample}/dereplicated_bins/"),
-        dereplicated_bins_folder = directory("results/{sample}/dereplicated_bins/dereplicated_genomes/")
+        dereplicated_bins_folder = directory("results/{sample}/dereplicated_bins/dereplicated_genomes/"),
+        quality_summary = "results/{sample}/dereplicated_bins/data_tables/genomeInfo.csv"
     conda:
         "envs/dRep.yml"
     params:
@@ -144,37 +183,14 @@ rule dereplicate:
         -comp {params.completeness_min} \
         -sa {params.sa} \
         -nc {params.nc} \
+        --genomeInfo {input.quality_summary_dRep} \
         --checkM_method lineage_wf
-        """
-
-rule quality_check:
-# dRep technically already applies a CheckM quality check, but  we will run that on the dereplicated bins only.
-    input:
-        bins = "results/{sample}/dereplicated_bins/dereplicated_genomes/"
-    output:
-        folder = directory("results/{sample}/checkm/"),
-        quality_summary = "results/{sample}/checkm/quality_summary.tsv"
-    conda:
-        "envs/checkM.yml"
-    params:
-        threads = 20,
-        extension = "fasta", #file extension
-        tmpdir = "/storage1/data10/tmp",
-        pplacer_threads = 20
-    shell:
-        """
-        checkm lineage_wf -x {params.extension} \
-        -t {params.threads} \
-        --tab_table \
-        -f {output.quality_summary} \
-        --tmpdir {params.tmpdir} \
-        {input.bins} {output.folder}
         """
 
 rule select_quality_bins:
 # Among all the dereplicated MAGs, we'd like to know how many are medium to high--quality. See Bowers et al., 2017 Nature Biotechnology
     input:
-        quality_summary = "results/{sample}/checkm/quality_summary.tsv",
+        quality_summary = "results/{sample}/dereplicated_bins/data_tables/genomeInfo.csv"
     output:
         medium_quality_bins = "results/{sample}/medium_quality_bins.txt",
         high_quality_bins = "results/{sample}/high_quality_bins.txt",
@@ -183,8 +199,8 @@ rule select_quality_bins:
     shell:
         """
         # Note that the 12th column is competeness and the 13th column is contamination. 
-        awk -F "\t" '{{ if(($12 >= 50) && ($13 <10)) {{print}} }}' {input.quality_summary} | cut -f 1 > {output.medium_quality_bins}
-        awk -F "\t" '{{ if(($12 > 90) && ($13 <5)) {{print}} }}' {input.quality_summary} | cut -f 1 > {output.high_quality_bins}
+        awk -F "," '{{ if(($12 >= 50) && ($13 <10)) {{print}} }}' {input.quality_summary} | cut -f 1 > {output.medium_quality_bins}
+        awk -F "," '{{ if(($12 > 90) && ($13 <5)) {{print}} }}' {input.quality_summary} | cut -f 1 > {output.high_quality_bins}
         cat {output.medium_quality_bins} {output.high_quality_bins} > {output.final_bin_set}
         sort {output.final_bin_set} | uniq > {output.final_bin_set_unique}
         """
@@ -222,7 +238,7 @@ rule assign_taxonomy:
         """
         GTDBTK_DATA_PATH={params.db_path}
 
-        gtdbtk classify_wf --skip-ani-screen \
+        gtdbtk classify_wf --skip_ani_screen \
         --genome_dir {input.bins} \
         --pplacer_cpus {params.threads} \
         -x {params.ext} --cpus {params.threads} \
