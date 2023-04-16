@@ -1,5 +1,0 @@
-<<<<<<< HEAD
-My name is Patricia Tran!! retrying
-=======
-My name is Patricia Tran!!
->>>>>>> 4fcf2468a549b11205a106a58ddf1f68f80e9591

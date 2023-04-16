@@ -23,11 +23,30 @@ rule all:
         expand("results/{sample}/taxonomy.tsv", sample=samples)
         
 # Define rules for each step in the workflow
-rule assemble_reads:
-# Description: This rules takes R1 and R2 paired FASTQ reads, assuming they are metagenomic, and assembles them using SPADES.s
+rule qc_reads:
     input:
         r1 = input_dir + "/{sample}_R1.fastq.gz",
-        r2 = input_dir + "/{sample}_R2.fastq.gz",
+        r2 = input_dir + "/{sample}_R2.fastq.gz"
+    output:
+        r1 = input_dir + "/qc/{sample}_R1.fastq.gz",
+        r2 = input_dir + "/qc/{sample}_R2.fastq.gz",
+        html = "results/{sample}/qc/{sample}_report.html",
+        json = "results/{sample}/qc/{sample}_report.json"
+    params:
+        threads = 20
+    conda: 
+        "envs/fastp.yml"
+    shell:
+        """
+        fastp -i {input.r1} -I {input.r2} -o {output.r1} -O {output.r2} -h {output.html} -j {output.json} --thread {params.threads}
+        """
+
+
+rule assemble_reads:
+# Description: This rules takes R1 and R2 paired FASTQ reads (QC-ed in the previous step), assuming they are metagenomic, and assembles them using SPADES.s
+    input:
+        r1 = input_dir + "/qc/{sample}_R1.fastq.gz",
+        r2 = input_dir + "/qc/{sample}_R2.fastq.gz",
     output:
         assembly = directory(output_dir + "/{sample}/assembly")
     conda:
@@ -46,8 +65,8 @@ rule assemble_reads:
 
 rule unzip_reads:
     input: 
-        r1 = input_dir + "/{sample}_R1.fastq.gz",
-        r2 = input_dir + "/{sample}_R2.fastq.gz",
+        r1 = input_dir + "/qc/{sample}_R1.fastq.gz",
+        r2 = input_dir + "/qc/{sample}_R2.fastq.gz",
         assembly = output_dir + "/{sample}/assembly"
     output:
         r1_unzip =  input_dir + "/unzipped/{sample}_1.fastq",
@@ -59,7 +78,7 @@ rule unzip_reads:
         """
 
 rule bin:
-# Using the assembled scaffods (reads) in the assembly,  and the reads, we will now bin them using metawrap, using 3 different softwares.
+# Using the assembled scaffods (reads) in the assembly and the reads, we will now bin them using metawrap, using 3 different softwares.
     input:
         assembly = "results/{sample}/assembly/contigs.fasta",
         r1_unzip =  input_dir + "/unzipped/{sample}_1.fastq",
@@ -96,7 +115,7 @@ rule refine:
         "envs/dasTool.yml"
     shell:
         """
-        mkdir {output.refined_bins_tables}
+        mkdir -p {output.refined_bins_tables}
         Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/maxbin2_bins/ > {output.refined_bins_tables}/maxbin2_scaf2bin.tsv
         Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/metabat1_bins/ > {output.refined_bins_tables}/metabat1_scaf2bin.tsv
         Fasta_to_Scaffolds2Bin.sh -e fa -i {input.bins}/metabat2_bins/ > {output.refined_bins_tables}/metabat2_scaf2bin.tsv
@@ -118,7 +137,7 @@ rule rename_MAGs:
         refined_bins_renamed = directory("results/{sample}/renamed_refined_MAGS/")
     shell:
         """
-        mkdir {output.refined_bins_renamed}
+        mkdir -p {output.refined_bins_renamed}
         rename 's/.fa/.fasta/' {input.refined_bins}/*.fa
         mv {input.refined_bins}/*.fasta {output.refined_bins_renamed}/.      
         """
@@ -153,9 +172,12 @@ rule edit_checkm_file:
     input:
         quality_checkm = "results/{sample}/checkm/quality_summary.tsv" 
     output:
-        quality_summary_dRep = "results/{sample}/checkm_for_dRep/quality_summary.csv"
+        checkm_for_drep = directory("results/{sample}/checkm_for_dRep/"),
+        quality_summary_dRep = "results/{sample}/checkm_for_dRep/quality_summary.csv",
+        quality_summary_dRep_awk = "results/{sample}/checkm_for_dRep/quality_summary_awk.csv"
     shell:
         """
+        mkdir -p {output.checkm_for_drep}
         cp {input.quality_checkm} {output.quality_summary_dRep}
         sed -i 's|Bin Id|genome|g' {output.quality_summary_dRep}
         sed -i 's|Completeness|completeness|g' {output.quality_summary_dRep} 
@@ -163,17 +185,18 @@ rule edit_checkm_file:
         sed -i 's|\t|,|g' {output.quality_summary_dRep}
 
         # Finally, we need to add the file extension to the first MAG names in the first column:
-        awk -F "," '$1=$1".fasta"' {output.quality_summary_dRep} > {output.quality_summary_dRep}
+        awk -v OFS="," -F "," '$1=$1".fasta"' {output.quality_summary_dRep} > {output.quality_summary_dRep_awk}
+        sed -i 's|genome.fasta|genome|g' {output.quality_summary_dRep_awk}
         """
 
 rule dereplicate:
 # Once we have the bins, we will dereplicate them as to not have repetitive genomes. They need to be named ".fasta"
     input:
         refined_bins_renamed = "results/{sample}/renamed_refined_MAGS/",
-        quality_summary_dRep = "results/{sample}/checkm_for_dRep/quality_summary.csv"
+        quality_summary_dRep_awk = "results/{sample}/checkm_for_dRep/quality_summary_awk.csv"
     output:
         dereplicated_bins = directory("results/{sample}/dereplicated_bins/"),
-        dereplicated_bins_folder = directory("results/{sample}/dereplicated_bins/dereplicated_genomes/"),
+        bin_folder = "results/{sample}/dereplicated_bins/dereplicated_genomes/",
         quality_summary = "results/{sample}/dereplicated_bins/data_tables/genomeInfo.csv"
     conda:
         "envs/dRep.yml"
@@ -189,12 +212,12 @@ rule dereplicate:
         -comp {params.completeness_min} \
         -sa {params.sa} \
         -nc {params.nc} \
-        --genomeInfo {input.quality_summary_dRep} \
+        --genomeInfo {input.quality_summary_dRep_awk} \
         --checkM_method lineage_wf
         """
 
 rule select_quality_bins:
-# Among all the dereplicated MAGs, we'd like to know how many are medium to high--quality. See Bowers et al., 2017 Nature Biotechnology
+# Among all the dereplicated MAGs, we'd like to know how many are medium to high-quality. See Bowers et al., 2017 Nature Biotechnology
     input:
         quality_summary = "results/{sample}/dereplicated_bins/data_tables/genomeInfo.csv"
     output:
@@ -220,7 +243,7 @@ rule copy_final_bins_over:
         copy_script = "results/{sample}/copy_final_bin_set.sh"
     shell:
         """
-        mkdir {output.final_bin_folder}
+        mkdir -p {output.final_bin_folder}
         sed -e 's|^|cp {input.bin_folder}/|g' {input.final_bin_set_unique} > {output.copy_script}
         sed -i 's|$|.fasta {output.final_bin_folder}/.|g' {output.copy_script}
         bash {output.copy_script}

@@ -1,6 +1,7 @@
 data/
 .snakemake/
 results/
+logs/
 *.log
 
 # History files
