@@ -28,8 +28,8 @@ rule qc_reads:
         r1 = input_dir + "/{sample}_R1.fastq.gz",
         r2 = input_dir + "/{sample}_R2.fastq.gz"
     output:
-        r1 = input_dir + "/qc/{sample}_R1.fastq.gz",
-        r2 = input_dir + "/qc/{sample}_R2.fastq.gz",
+        r1 = "results/{sample}/qc/{sample}_R1.fastq.gz",
+        r2 = "results/{sample}/qc/{sample}_R2.fastq.gz",
         html = "results/{sample}/qc/{sample}_report.html",
         json = "results/{sample}/qc/{sample}_report.json"
     params:
@@ -45,14 +45,15 @@ rule qc_reads:
 rule assemble_reads:
 # Description: This rules takes R1 and R2 paired FASTQ reads (QC-ed in the previous step), assuming they are metagenomic, and assembles them using SPADES.s
     input:
-        r1 = input_dir + "/qc/{sample}_R1.fastq.gz",
-        r2 = input_dir + "/qc/{sample}_R2.fastq.gz",
+        r1 = "results/{sample}/qc/{sample}_R1.fastq.gz",
+        r2 = "results/{sample}/qc/{sample}_R2.fastq.gz"
     output:
-        assembly = directory(output_dir + "/{sample}/assembly")
+        assembly = directory(output_dir + "/{sample}/assembly"),
+        assembly_contigs = "results/{sample}/assembly/contigs.fasta" 
     conda:
         "envs/spades.yml"
     params:
-        memory = 100, #use max 600 on our server, unit is Gb
+        memory = 600, #use max 600 on our server, unit is Gb
         kmers = "33,55,77,99,127",
         threads = 20
 
@@ -65,12 +66,12 @@ rule assemble_reads:
 
 rule unzip_reads:
     input: 
-        r1 = input_dir + "/qc/{sample}_R1.fastq.gz",
-        r2 = input_dir + "/qc/{sample}_R2.fastq.gz",
+        r1 = "results/{sample}/qc/{sample}_R1.fastq.gz",
+        r2 = "results/{sample}/qc/{sample}_R2.fastq.gz",
         assembly = output_dir + "/{sample}/assembly"
     output:
-        r1_unzip =  input_dir + "/unzipped/{sample}_1.fastq",
-        r2_unzip =  input_dir + "/unzipped/{sample}_2.fastq"
+        r1_unzip =  "results/{sample}/unzipped/{sample}_1.fastq",
+        r2_unzip =  "results/{sample}/unzipped/{sample}_2.fastq"
     shell:
         """
         gzip -c -d {input.r1} > {output.r1_unzip}
@@ -80,9 +81,9 @@ rule unzip_reads:
 rule bin:
 # Using the assembled scaffods (reads) in the assembly and the reads, we will now bin them using metawrap, using 3 different softwares.
     input:
-        assembly = "results/{sample}/assembly/contigs.fasta",
-        r1_unzip =  input_dir + "/unzipped/{sample}_1.fastq",
-        r2_unzip =  input_dir + "/unzipped/{sample}_2.fastq"
+        assembly = output_dir + "/{sample}/assembly",
+        r1_unzip =  "results/{sample}/unzipped/{sample}_1.fastq",
+        r2_unzip =  "results/{sample}/unzipped/{sample}_2.fastq"
     output:
         bins = directory("results/{sample}/bins/")
     conda:
