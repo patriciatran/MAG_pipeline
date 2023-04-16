@@ -122,6 +122,7 @@ rule rename_MAGs:
         rename 's/.fa/.fasta/' {input.refined_bins}/*.fa
         mv {input.refined_bins}/*.fasta {output.refined_bins_renamed}/.      
         """
+
 rule quality_check:
 #Run checkm prior to running dRep because there is no way to set a tmp directory in dRep only. 
 #We can then provide the .tsv file to dRep in the next step
@@ -129,13 +130,12 @@ rule quality_check:
          refined_bins_renamed = "results/{sample}/renamed_refined_MAGS/"
      output:
          folder = directory("results/{sample}/checkm/"),
-         quality_summary = "results/{sample}/checkm/quality_summary.tsv",
-         quality_summary_dRep = "results/{sample}/checkm/quality_summary.csv"
+         quality_summary = "results/{sample}/checkm/quality_summary.tsv"
      conda:
          "envs/checkM.yml"
      params:
          threads = 20,
-         extension = "fa", #file extension
+         extension = "fasta", #file extension
          tmpdir = "/storage1/data10/tmp",
          pplacer_threads = 20
      shell:
@@ -146,23 +146,31 @@ rule quality_check:
         -f {output.quality_summary} \
         --tmpdir {params.tmpdir} \
         {input.refined_bins_renamed} {output.folder}
+        """
 
-        # There are a few edits to the TSV file to be done --> convert to a CSV file, change the checkm headers Bin.Id to genome, Completeness to completeness, and Contamination to contamination
-        cp {output.quality_summary} {output.quality_summary_dRep}
+rule edit_checkm_file:
+#  # There are a few edits to the TSV file to be done --> convert to a CSV file, change the checkm headers Bin.Id to genome, Completeness to completeness, and Contamination to contamination
+    input:
+        quality_checkm = "results/{sample}/checkm/quality_summary.tsv" 
+    output:
+        quality_summary_dRep = "results/{sample}/checkm_for_dRep/quality_summary.csv"
+    shell:
+        """
+        cp {input.quality_checkm} {output.quality_summary_dRep}
         sed -i 's|Bin Id|genome|g' {output.quality_summary_dRep}
         sed -i 's|Completeness|completeness|g' {output.quality_summary_dRep} 
         sed -i 's|Contamination|contamination|g' {output.quality_summary_dRep} 
         sed -i 's|\t|,|g' {output.quality_summary_dRep}
 
         # Finally, we need to add the file extension to the first MAG names in the first column:
-        awk -F "," '$1=$1".fasta"' {output.quality_summary_dRep}
+        awk -F "," '$1=$1".fasta"' {output.quality_summary_dRep} > {output.quality_summary_dRep}
         """
 
 rule dereplicate:
 # Once we have the bins, we will dereplicate them as to not have repetitive genomes. They need to be named ".fasta"
     input:
         refined_bins_renamed = "results/{sample}/renamed_refined_MAGS/",
-        quality_summary_dRep = "results/{sample}/checkm/quality_summary.csv"
+        quality_summary_dRep = "results/{sample}/checkm_for_dRep/quality_summary.csv"
     output:
         dereplicated_bins = directory("results/{sample}/dereplicated_bins/"),
         dereplicated_bins_folder = directory("results/{sample}/dereplicated_bins/dereplicated_genomes/"),
@@ -173,10 +181,8 @@ rule dereplicate:
         completeness_min =  50, # Note that the defaut is 75
         sa = 0.99, # ANI threshold (default is 0.99)
         nc = 0.1, # coverage threshold (default is 0.1)
-        tmp_dir = "/storage1/data10/tmp" #  Important because CheckM will eat your whole /tmp folder (default) otherwise
     shell:
         """
-        TMPDIR={params.tmp_dir}
         dRep dereplicate \
         {output.dereplicated_bins} \
         -g {input.refined_bins_renamed}/*.fasta \
