@@ -1,0 +1,521 @@
+SRR9162907
+├── assembly
+│   ├── assembly_graph_after_simplification.gfa
+│   ├── assembly_graph.fastg
+│   ├── assembly_graph_with_scaffolds.gfa
+│   ├── before_rr.fasta
+│   ├── contigs.fasta
+│   ├── contigs.paths
+│   ├── corrected
+│   │   ├── configs
+│   │   │   └── config.info
+│   │   ├── corrected.yaml
+│   │   ├── SRR9162907_R1.fastq.00.0_0.cor.fastq.gz
+│   │   ├── SRR9162907_R2.fastq.00.0_0.cor.fastq.gz
+│   │   └── SRR9162907_R_unpaired.00.0_0.cor.fastq.gz
+│   ├── dataset.info
+│   ├── first_pe_contigs.fasta
+│   ├── input_dataset.yaml
+│   ├── K127
+│   │   ├── assembly_graph_after_simplification.gfa
+│   │   ├── assembly_graph.fastg
+│   │   ├── assembly_graph_with_scaffolds.gfa
+│   │   ├── before_rr.fasta
+│   │   ├── configs
+│   │   │   ├── careful_mda_mode.info
+│   │   │   ├── careful_mode.info
+│   │   │   ├── config.info
+│   │   │   ├── construction.info
+│   │   │   ├── detail_info_printer.info
+│   │   │   ├── distance_estimation.info
+│   │   │   ├── hmm_mode.info
+│   │   │   ├── isolate_mode.info
+│   │   │   ├── large_genome_mode.info
+│   │   │   ├── mda_mode.info
+│   │   │   ├── meta_mode.info
+│   │   │   ├── metaplasmid_mode.info
+│   │   │   ├── metaviral_mode.info
+│   │   │   ├── moleculo_mode.info
+│   │   │   ├── pe_params.info
+│   │   │   ├── plasmid_mode.info
+│   │   │   ├── rna_mode.info
+│   │   │   ├── rnaviral_mode.info
+│   │   │   ├── simplification.info
+│   │   │   ├── toy.info
+│   │   │   └── tsa.info
+│   │   ├── final_contigs.fasta
+│   │   ├── final_contigs.paths
+│   │   ├── final.lib_data
+│   │   ├── first_pe_contigs.fasta
+│   │   ├── path_extend
+│   │   ├── scaffolds.fasta
+│   │   ├── scaffolds.paths
+│   │   └── strain_graph.gfa
+│   ├── K33
+│   │   ├── configs
+│   │   │   ├── careful_mda_mode.info
+│   │   │   ├── careful_mode.info
+│   │   │   ├── config.info
+│   │   │   ├── construction.info
+│   │   │   ├── detail_info_printer.info
+│   │   │   ├── distance_estimation.info
+│   │   │   ├── hmm_mode.info
+│   │   │   ├── isolate_mode.info
+│   │   │   ├── large_genome_mode.info
+│   │   │   ├── mda_mode.info
+│   │   │   ├── meta_mode.info
+│   │   │   ├── metaplasmid_mode.info
+│   │   │   ├── metaviral_mode.info
+│   │   │   ├── moleculo_mode.info
+│   │   │   ├── pe_params.info
+│   │   │   ├── plasmid_mode.info
+│   │   │   ├── rna_mode.info
+│   │   │   ├── rnaviral_mode.info
+│   │   │   ├── simplification.info
+│   │   │   ├── toy.info
+│   │   │   └── tsa.info
+│   │   ├── final.lib_data
+│   │   └── simplified_contigs
+│   │       ├── contigs_info
+│   │       ├── contigs.off
+│   │       └── contigs.seq
+│   ├── K55
+│   │   ├── configs
+│   │   │   ├── careful_mda_mode.info
+│   │   │   ├── careful_mode.info
+│   │   │   ├── config.info
+│   │   │   ├── construction.info
+│   │   │   ├── detail_info_printer.info
+│   │   │   ├── distance_estimation.info
+│   │   │   ├── hmm_mode.info
+│   │   │   ├── isolate_mode.info
+│   │   │   ├── large_genome_mode.info
+│   │   │   ├── mda_mode.info
+│   │   │   ├── meta_mode.info
+│   │   │   ├── metaplasmid_mode.info
+│   │   │   ├── metaviral_mode.info
+│   │   │   ├── moleculo_mode.info
+│   │   │   ├── pe_params.info
+│   │   │   ├── plasmid_mode.info
+│   │   │   ├── rna_mode.info
+│   │   │   ├── rnaviral_mode.info
+│   │   │   ├── simplification.info
+│   │   │   ├── toy.info
+│   │   │   └── tsa.info
+│   │   ├── final.lib_data
+│   │   └── simplified_contigs
+│   │       ├── contigs_info
+│   │       ├── contigs.off
+│   │       └── contigs.seq
+│   ├── K77
+│   │   ├── configs
+│   │   │   ├── careful_mda_mode.info
+│   │   │   ├── careful_mode.info
+│   │   │   ├── config.info
+│   │   │   ├── construction.info
+│   │   │   ├── detail_info_printer.info
+│   │   │   ├── distance_estimation.info
+│   │   │   ├── hmm_mode.info
+│   │   │   ├── isolate_mode.info
+│   │   │   ├── large_genome_mode.info
+│   │   │   ├── mda_mode.info
+│   │   │   ├── meta_mode.info
+│   │   │   ├── metaplasmid_mode.info
+│   │   │   ├── metaviral_mode.info
+│   │   │   ├── moleculo_mode.info
+│   │   │   ├── pe_params.info
+│   │   │   ├── plasmid_mode.info
+│   │   │   ├── rna_mode.info
+│   │   │   ├── rnaviral_mode.info
+│   │   │   ├── simplification.info
+│   │   │   ├── toy.info
+│   │   │   └── tsa.info
+│   │   ├── final.lib_data
+│   │   └── simplified_contigs
+│   │       ├── contigs_info
+│   │       ├── contigs.off
+│   │       └── contigs.seq
+│   ├── K99
+│   │   ├── configs
+│   │   │   ├── careful_mda_mode.info
+│   │   │   ├── careful_mode.info
+│   │   │   ├── config.info
+│   │   │   ├── construction.info
+│   │   │   ├── detail_info_printer.info
+│   │   │   ├── distance_estimation.info
+│   │   │   ├── hmm_mode.info
+│   │   │   ├── isolate_mode.info
+│   │   │   ├── large_genome_mode.info
+│   │   │   ├── mda_mode.info
+│   │   │   ├── meta_mode.info
+│   │   │   ├── metaplasmid_mode.info
+│   │   │   ├── metaviral_mode.info
+│   │   │   ├── moleculo_mode.info
+│   │   │   ├── pe_params.info
+│   │   │   ├── plasmid_mode.info
+│   │   │   ├── rna_mode.info
+│   │   │   ├── rnaviral_mode.info
+│   │   │   ├── simplification.info
+│   │   │   ├── toy.info
+│   │   │   └── tsa.info
+│   │   ├── final.lib_data
+│   │   └── simplified_contigs
+│   │       ├── contigs_info
+│   │       ├── contigs.off
+│   │       └── contigs.seq
+│   ├── misc
+│   │   └── broken_scaffolds.fasta
+│   ├── params.txt
+│   ├── pipeline_state
+│   │   ├── stage_0_before_start
+│   │   ├── stage_10_k127
+│   │   ├── stage_11_copy_files
+│   │   ├── stage_12_as_finish
+│   │   ├── stage_13_bs
+│   │   ├── stage_14_terminate
+│   │   ├── stage_1_ec_start
+│   │   ├── stage_2_ec_runtool
+│   │   ├── stage_3_ec_compress
+│   │   ├── stage_4_ec_finish
+│   │   ├── stage_5_as_start
+│   │   ├── stage_6_k33
+│   │   ├── stage_7_k55
+│   │   ├── stage_8_k77
+│   │   └── stage_9_k99
+│   ├── run_spades.sh
+│   ├── run_spades.yaml
+│   ├── scaffolds.fasta
+│   ├── scaffolds.paths
+│   ├── spades.log
+│   ├── strain_graph.gfa
+│   └── tmp
+├── bins
+│   ├── maxbin2_bins
+│   │   ├── bin.0.fa
+│   │   ├── bin.10.fa
+│   │   ├── bin.11.fa
+│   │   ├── bin.12.fa
+│   │   ├── bin.13.fa
+│   │   ├── bin.1.fa
+│   │   ├── bin.2.fa
+│   │   ├── bin.3.fa
+│   │   ├── bin.4.fa
+│   │   ├── bin.5.fa
+│   │   ├── bin.6.fa
+│   │   ├── bin.7.fa
+│   │   ├── bin.8.fa
+│   │   └── bin.9.fa
+│   ├── metabat1_bins
+│   │   ├── bin.10.fa
+│   │   ├── bin.11.fa
+│   │   ├── bin.12.fa
+│   │   ├── bin.13.fa
+│   │   ├── bin.14.fa
+│   │   ├── bin.15.fa
+│   │   ├── bin.16.fa
+│   │   ├── bin.17.fa
+│   │   ├── bin.1.fa
+│   │   ├── bin.2.fa
+│   │   ├── bin.3.fa
+│   │   ├── bin.4.fa
+│   │   ├── bin.5.fa
+│   │   ├── bin.6.fa
+│   │   ├── bin.7.fa
+│   │   ├── bin.8.fa
+│   │   ├── bin.9.fa
+│   │   └── bin.unbinned.fa
+│   ├── metabat2_bins
+│   │   ├── bin.10.fa
+│   │   ├── bin.11.fa
+│   │   ├── bin.12.fa
+│   │   ├── bin.13.fa
+│   │   ├── bin.14.fa
+│   │   ├── bin.1.fa
+│   │   ├── bin.2.fa
+│   │   ├── bin.3.fa
+│   │   ├── bin.4.fa
+│   │   ├── bin.5.fa
+│   │   ├── bin.6.fa
+│   │   ├── bin.7.fa
+│   │   ├── bin.8.fa
+│   │   ├── bin.9.fa
+│   │   ├── bin.lowDepth.fa
+│   │   ├── bin.tooShort.fa
+│   │   └── bin.unbinned.fa
+│   └── work_files
+│       ├── assembly.fa
+│       ├── assembly.fa.amb
+│       ├── assembly.fa.ann
+│       ├── assembly.fa.bwt
+│       ├── assembly.fa.pac
+│       ├── assembly.fa.sa
+│       ├── maxbin2_out
+│       │   ├── bin.001.fasta
+│       │   ├── bin.002.fasta
+│       │   ├── bin.003.fasta
+│       │   ├── bin.004.fasta
+│       │   ├── bin.005.fasta
+│       │   ├── bin.006.fasta
+│       │   ├── bin.007.fasta
+│       │   ├── bin.008.fasta
+│       │   ├── bin.009.fasta
+│       │   ├── bin.010.fasta
+│       │   ├── bin.011.fasta
+│       │   ├── bin.012.fasta
+│       │   ├── bin.013.fasta
+│       │   ├── bin.014.fasta
+│       │   ├── bin.log
+│       │   ├── bin.marker
+│       │   ├── bin.marker_of_each_bin.tar.gz
+│       │   ├── bin.noclass
+│       │   ├── bin.summary
+│       │   └── bin.tooshort
+│       ├── mb2_abund_list.txt
+│       ├── mb2_master_depth.txt
+│       ├── mb2_SRR9162907.txt
+│       ├── metabat_depth.txt
+│       └── SRR9162907.bam
+├── checkm
+│   ├── bins
+│   │   ├── metabat1.012
+│   │   │   ├── genes.faa
+│   │   │   ├── genes.gff
+│   │   │   ├── hmmer.analyze.txt
+│   │   │   └── hmmer.tree.txt
+│   │   ├── metabat1.014
+│   │   │   ├── genes.faa
+│   │   │   ├── genes.gff
+│   │   │   ├── hmmer.analyze.txt
+│   │   │   └── hmmer.tree.txt
+│   │   ├── metabat1.015
+│   │   │   ├── genes.faa
+│   │   │   ├── genes.gff
+│   │   │   ├── hmmer.analyze.txt
+│   │   │   └── hmmer.tree.txt
+│   │   ├── metabat2.001
+│   │   │   ├── genes.faa
+│   │   │   ├── genes.gff
+│   │   │   ├── hmmer.analyze.txt
+│   │   │   └── hmmer.tree.txt
+│   │   └── metabat2.010
+│   │       ├── genes.faa
+│   │       ├── genes.gff
+│   │       ├── hmmer.analyze.txt
+│   │       └── hmmer.tree.txt
+│   ├── checkm.log
+│   ├── lineage.ms
+│   ├── quality_summary.tsv
+│   └── storage
+│       ├── aai_qa
+│       │   ├── metabat1.012
+│       │   │   ├── PF00347.18.masked.faa
+│       │   │   ├── PF01205.14.masked.faa
+│       │   │   ├── PF01434.13.masked.faa
+│       │   │   ├── PF01509.13.masked.faa
+│       │   │   ├── PF02673.13.masked.faa
+│       │   │   ├── PF06418.9.masked.faa
+│       │   │   ├── PF07497.7.masked.faa
+│       │   │   ├── PF11987.3.masked.faa
+│       │   │   ├── PF13368.1.masked.faa
+│       │   │   ├── PF14450.1.masked.faa
+│       │   │   ├── TIGR00036.masked.faa
+│       │   │   ├── TIGR00595.masked.faa
+│       │   │   ├── TIGR00644.masked.faa
+│       │   │   ├── TIGR00717.masked.faa
+│       │   │   ├── TIGR01051.masked.faa
+│       │   │   ├── TIGR01082.masked.faa
+│       │   │   └── TIGR01133.masked.faa
+│       │   ├── metabat1.014
+│       │   │   └── TIGR00233.masked.faa
+│       │   ├── metabat1.015
+│       │   │   ├── PF01351.13.masked.faa
+│       │   │   ├── PF01746.16.masked.faa
+│       │   │   ├── PF04977.10.masked.faa
+│       │   │   ├── PF04997.7.masked.faa
+│       │   │   ├── PF12864.2.masked.faa
+│       │   │   ├── PF14121.1.masked.faa
+│       │   │   ├── TIGR00095.masked.faa
+│       │   │   └── TIGR01830.masked.faa
+│       │   └── metabat2.010
+│       │       ├── PF01434.13.masked.faa
+│       │       ├── PF05362.8.masked.faa
+│       │       └── TIGR00048.masked.faa
+│       ├── bin_stats.analyze.tsv
+│       ├── bin_stats_ext.tsv
+│       ├── bin_stats.tree.tsv
+│       ├── checkm_hmm_info.pkl.gz
+│       ├── marker_gene_stats.tsv
+│       ├── phylo_hmm_info.pkl.gz
+│       └── tree
+│           ├── concatenated.fasta
+│           ├── concatenated.pplacer.json
+│           ├── concatenated.tre
+│           ├── PF00164.20.masked.faa
+│           ├── PF00177.16.masked.faa
+│           ├── PF00181.18.masked.faa
+│           ├── PF00189.15.masked.faa
+│           ├── PF00203.16.masked.faa
+│           ├── PF00237.14.masked.faa
+│           ├── PF00238.14.masked.faa
+│           ├── PF00252.13.masked.faa
+│           ├── PF00276.15.masked.faa
+│           ├── PF00281.14.masked.faa
+│           ├── PF00297.17.masked.faa
+│           ├── PF00298.14.masked.faa
+│           ├── PF00312.17.masked.faa
+│           ├── PF00318.15.masked.faa
+│           ├── PF00333.15.masked.faa
+│           ├── PF00366.15.masked.faa
+│           ├── PF00380.14.masked.faa
+│           ├── PF00410.14.masked.faa
+│           ├── PF00411.14.masked.faa
+│           ├── PF00466.15.masked.faa
+│           ├── PF00562.23.masked.faa
+│           ├── PF00572.13.masked.faa
+│           ├── PF00573.17.masked.faa
+│           ├── PF00623.15.masked.faa
+│           ├── PF00673.16.masked.faa
+│           ├── PF00687.16.masked.faa
+│           ├── PF00831.18.masked.faa
+│           ├── PF00861.17.masked.faa
+│           ├── PF01192.17.masked.faa
+│           ├── PF01509.13.masked.faa
+│           ├── PF02978.14.masked.faa
+│           ├── PF03719.10.masked.faa
+│           ├── PF03946.9.masked.faa
+│           ├── PF03947.13.masked.faa
+│           ├── PF04560.15.masked.faa
+│           ├── PF04561.9.masked.faa
+│           ├── PF04563.10.masked.faa
+│           ├── PF04565.11.masked.faa
+│           ├── PF04997.7.masked.faa
+│           ├── PF05000.12.masked.faa
+│           ├── PF11987.3.masked.faa
+│           ├── pplacer.out
+│           ├── TIGR00344.masked.faa
+│           └── TIGR00422.masked.faa
+├── checkm_for_dRep
+│   ├── quality_summary_awk.csv
+│   └── quality_summary.csv
+├── copy_final_bin_set.sh
+├── dereplicated_bins
+│   ├── data
+│   │   ├── ANImf_files
+│   │   │   ├── metabat1.012.fasta
+│   │   │   │   ├── metabat1.012.fasta_vs_metabat1.012.fasta.delta
+│   │   │   │   └── metabat1.012.fasta_vs_metabat1.012.fasta.delta.filtered
+│   │   │   ├── metabat1.014.fasta
+│   │   │   │   ├── metabat1.014.fasta_vs_metabat1.014.fasta.delta
+│   │   │   │   └── metabat1.014.fasta_vs_metabat1.014.fasta.delta.filtered
+│   │   │   ├── metabat1.015.fasta
+│   │   │   │   ├── metabat1.015.fasta_vs_metabat1.015.fasta.delta
+│   │   │   │   └── metabat1.015.fasta_vs_metabat1.015.fasta.delta.filtered
+│   │   │   ├── metabat2.001.fasta
+│   │   │   │   ├── metabat2.001.fasta_vs_metabat2.001.fasta.delta
+│   │   │   │   └── metabat2.001.fasta_vs_metabat2.001.fasta.delta.filtered
+│   │   │   └── metabat2.010.fasta
+│   │   │       ├── metabat2.010.fasta_vs_metabat2.010.fasta.delta
+│   │   │       └── metabat2.010.fasta_vs_metabat2.010.fasta.delta.filtered
+│   │   ├── Clustering_files
+│   │   │   └── primary_linkage.pickle
+│   │   └── MASH_files
+│   │       └── MASH_files
+│   │           ├── chunk_0_MASH_table.tsv
+│   │           └── sketches
+│   │               └── chunk_0
+│   │                   ├── chunk_all.msh
+│   │                   ├── metabat1.012.fasta.msh
+│   │                   ├── metabat1.014.fasta.msh
+│   │                   ├── metabat1.015.fasta.msh
+│   │                   ├── metabat2.001.fasta.msh
+│   │                   └── metabat2.010.fasta.msh
+│   ├── data_tables
+│   │   ├── Bdb.csv
+│   │   ├── Cdb.csv
+│   │   ├── genomeInfo.csv
+│   │   ├── genomeInformation.csv
+│   │   ├── Mdb.csv
+│   │   ├── Ndb.csv
+│   │   ├── Sdb.csv
+│   │   ├── Wdb.csv
+│   │   └── Widb.csv
+│   ├── dereplicated_genomes
+│   │   ├── metabat1.012.fasta
+│   │   ├── metabat1.014.fasta
+│   │   ├── metabat1.015.fasta
+│   │   ├── metabat2.001.fasta
+│   │   └── metabat2.010.fasta
+│   ├── figures
+│   │   ├── Clustering_scatterplots.pdf
+│   │   ├── Cluster_scoring.pdf
+│   │   ├── Primary_clustering_dendrogram.pdf
+│   │   ├── Secondary_clustering_dendrograms.pdf
+│   │   ├── Secondary_clustering_MDS.pdf
+│   │   └── Winning_genomes.pdf
+│   └── log
+│       ├── cluster_arguments.json
+│       ├── logger.log
+│       └── warnings.txt
+├── final_bin_set
+│   ├── metabat1.012.fasta
+│   ├── metabat1.014.fasta
+│   ├── metabat1.015.fasta
+│   ├── metabat2.001.fasta
+│   └── metabat2.010.fasta
+├── final_bin_set_to_extract.txt
+├── final_bin_set.txt
+├── final_bin_set_unique.txt
+├── gtdbtk
+│   ├── align
+│   │   ├── gtdbtk.bac120.filtered.tsv
+│   │   ├── gtdbtk.bac120.msa.fasta.gz
+│   │   └── gtdbtk.bac120.user_msa.fasta.gz
+│   ├── classify
+│   │   ├── gtdbtk.bac120.classify.tree.2.tree
+│   │   ├── gtdbtk.bac120.classify.tree.3.tree
+│   │   ├── gtdbtk.bac120.summary.tsv
+│   │   ├── gtdbtk.bac120.tree.mapping.tsv
+│   │   └── gtdbtk.backbone.bac120.classify.tree
+│   ├── gtdbtk.bac120.summary.tsv -> classify/gtdbtk.bac120.summary.tsv
+│   ├── gtdbtk.json
+│   ├── gtdbtk.log
+│   ├── gtdbtk.warnings.log
+│   └── identify
+│       ├── gtdbtk.ar53.markers_summary.tsv
+│       ├── gtdbtk.bac120.markers_summary.tsv
+│       ├── gtdbtk.failed_genomes.tsv
+│       └── gtdbtk.translation_table_summary.tsv
+├── high_quality_bins.txt
+├── medium_quality_bins.txt
+├── qc
+│   ├── SRR9162907_R1.fastq.gz
+│   ├── SRR9162907_R2.fastq.gz
+│   ├── SRR9162907_report.html
+│   └── SRR9162907_report.json
+├── refine_bins_DASTool_bins
+├── refine_bins_DASTool.log
+├── refine_bins_DASTool_scaffolds2bin.txt
+├── refine_bins_DASTool_summary.txt
+├── refine_bins_maxbin2.eval
+├── refine_bins_metabat1.eval
+├── refine_bins_metabat2.eval
+├── refine_bins_proteins.faa
+├── refine_bins_proteins.faa.archaea.scg
+├── refine_bins_proteins.faa.bacteria.scg
+├── refine_bins.seqlength
+├── refine_bins_tables
+│   ├── maxbin2_scaf2bin.tsv
+│   ├── metabat1_scaf2bin.tsv
+│   └── metabat2_scaf2bin.tsv
+├── renamed_refined_MAGS
+│   ├── metabat1.012.fasta
+│   ├── metabat1.014.fasta
+│   ├── metabat1.015.fasta
+│   ├── metabat2.001.fasta
+│   └── metabat2.010.fasta
+├── taxonomy_final_bin_set.tsv
+└── unzipped
+    ├── SRR9162907_1.fastq
+    └── SRR9162907_2.fastq
+
+69 directories, 449 files
