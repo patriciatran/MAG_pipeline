@@ -14,8 +14,19 @@ The general steps  are:
 
 ![DAG of the workflow](https://github.com/patriciatran/test_MAG_pipeline/blob/main/dag.svg)
 
+# Example result folder:
+https://github.com/patriciatran/MAG_pipeline/blob/main/example_results_folder.txt 
+
+## Relevant folders for output:
+
+- *results/{sample}/final_bin_set/*.fasta* : all the final bins in FASTA format
+- *results/{sample}/taxonomy_final_bin_set.tsv* : final GTDBTK taxonomic assignment for the final bin set of MAGs
+
 # Status:
-Work in progress
+- Pipeline works without errors!
+- Next step: improving documentation and distribute as a package.
+- Add ways to report final information : e.g. run time of the pipeline, how many MAGs in the final bin set for each sample.
+- Add ways to report final information: e.g. bar plot of taxonomies across samples
 
 # Thanks to:
 This pipeline exists because of the folks making these programs available, please cite their work:
