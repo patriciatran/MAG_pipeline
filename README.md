@@ -23,6 +23,8 @@ https://github.com/patriciatran/MAG_pipeline/blob/main/example_results_folder.tx
 - *results/{sample}/taxonomy_final_bin_set.tsv* : final GTDBTK taxonomic assignment for the final bin set of MAGs
 
 # Status:
+
+**April 17, 2023**
 - Pipeline works without errors!
 - Next step: improving documentation and distribute as a package.
 - Add ways to report final information : e.g. run time of the pipeline, how many MAGs in the final bin set for each sample.
