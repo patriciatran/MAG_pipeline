@@ -67,8 +67,7 @@ rule assemble_reads:
 rule unzip_reads:
     input: 
         r1 = "results/{sample}/qc/{sample}_R1.fastq.gz",
-        r2 = "results/{sample}/qc/{sample}_R2.fastq.gz",
-        assembly = output_dir + "/{sample}/assembly"
+        r2 = "results/{sample}/qc/{sample}_R2.fastq.gz"
     output:
         r1_unzip =  "results/{sample}/unzipped/{sample}_1.fastq",
         r2_unzip =  "results/{sample}/unzipped/{sample}_2.fastq"
@@ -81,9 +80,9 @@ rule unzip_reads:
 rule bin:
 # Using the assembled scaffods (reads) in the assembly and the reads, we will now bin them using metawrap, using 3 different softwares.
     input:
-        assembly = output_dir + "/{sample}/assembly",
-        r1_unzip =  "results/{sample}/unzipped/{sample}_1.fastq",
-        r2_unzip =  "results/{sample}/unzipped/{sample}_2.fastq"
+        assembly = "results/{sample}/assembly/contigs.fasta",
+        r1_unzip = "results/{sample}/unzipped/{sample}_1.fastq",
+        r2_unzip = "results/{sample}/unzipped/{sample}_2.fastq"
     output:
         bins = directory("results/{sample}/bins/")
     conda:
@@ -197,7 +196,7 @@ rule dereplicate:
         quality_summary_dRep_awk = "results/{sample}/checkm_for_dRep/quality_summary_awk.csv"
     output:
         dereplicated_bins = directory("results/{sample}/dereplicated_bins/"),
-        bin_folder = "results/{sample}/dereplicated_bins/dereplicated_genomes/",
+        bin_folder = directory("results/{sample}/dereplicated_bins/dereplicated_genomes/"),
         quality_summary = "results/{sample}/dereplicated_bins/data_tables/genomeInfo.csv"
     conda:
         "envs/dRep.yml"
