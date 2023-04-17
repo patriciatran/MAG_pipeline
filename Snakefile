@@ -251,12 +251,9 @@ rule copy_final_bins_over:
 rule assign_taxonomy:
 # Now that we have the final bin set, let's assign their taxonomy.
     input:
-        bins = "results/{sample}/final_bin_set/",
-        final_bin_set_unique = "results/{sample}/final_bin_set_unique.txt"
+        bins = "results/{sample}/final_bin_set/"
     output:
-        out_file = "results/{sample}/taxonomy_final_bin_set.tsv",
-        out_dir =  directory("results/{sample}/gtdbtk/"),
-        final_bin_set_no_extension = "results/{sample}/final_bin_set_to_extract.txt"
+        out_dir =  directory("results/{sample}/gtdbtk/")
     conda:
         "envs/gtdbtk-2.2.6.yml"
     params:
@@ -272,7 +269,17 @@ rule assign_taxonomy:
         --pplacer_cpus {params.threads} \
         -x {params.ext} --cpus {params.threads} \
         --out_dir {output.out_dir}
+        """
 
-        sed 's|.fasta||g' {input.final_bin_set_unique} > {output.final_bin_set_no_extension}
-        grep -f {output.final_bin_set_no_extension} {output.out_dir}/gtdbtk/classify/*.summary.tsv > {output.out_file}
+rule get_final_output:
+    input:
+        bins = "results/{sample}/final_bin_set/",
+        gtdbtk_dir =  "results/{sample}/gtdbtk/"
+    output:
+        final_bin_set_no_extension = "results/{sample}/final_bin_set_to_extract.txt",
+        out_file = "results/{sample}/taxonomy_final_bin_set.tsv",
+    shell:
+        """
+        ls -lh {input.bins} | sed 's|.* ||g' | sed 's|.fasta||g' > {output.final_bin_set_no_extension}
+        grep -f {output.final_bin_set_no_extension} {input.gtdbtk_dir}/classify/*.summary.tsv > {output.out_file}
         """
