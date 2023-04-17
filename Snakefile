@@ -20,7 +20,7 @@ samples = list(fastq_files.sample)
 rule all:
     input:
         # from sympy import expand
-        expand("results/{sample}/taxonomy.tsv", sample=samples)
+        expand("results/{sample}/taxonomy_final_bin_set.tsv", sample=samples)
         
 # Define rules for each step in the workflow
 rule qc_reads:
@@ -40,7 +40,6 @@ rule qc_reads:
         """
         fastp -i {input.r1} -I {input.r2} -o {output.r1} -O {output.r2} -h {output.html} -j {output.json} --thread {params.threads}
         """
-
 
 rule assemble_reads:
 # Description: This rules takes R1 and R2 paired FASTQ reads (QC-ed in the previous step), assuming they are metagenomic, and assembles them using SPADES.s
@@ -228,8 +227,8 @@ rule select_quality_bins:
     shell:
         """
         # Note that the 12th column is competeness and the 13th column is contamination. 
-        awk -F "," '{{ if(($12 >= 50) && ($13 <10)) {{print}} }}' {input.quality_summary} | cut -f 1 > {output.medium_quality_bins}
-        awk -F "," '{{ if(($12 > 90) && ($13 <5)) {{print}} }}' {input.quality_summary} | cut -f 1 > {output.high_quality_bins}
+        awk -F "," '{{ if(($12 >= 50) && ($13 <10)) {{print}} }}' {input.quality_summary} | cut -d "," -f 1 > {output.medium_quality_bins}
+        awk -F "," '{{ if(($12 > 90) && ($13 <5)) {{print}} }}' {input.quality_summary} | cut -d "," -f 1 > {output.high_quality_bins}
         cat {output.medium_quality_bins} {output.high_quality_bins} > {output.final_bin_set}
         sort {output.final_bin_set} | uniq > {output.final_bin_set_unique}
         """
@@ -245,7 +244,7 @@ rule copy_final_bins_over:
         """
         mkdir -p {output.final_bin_folder}
         sed -e 's|^|cp {input.bin_folder}/|g' {input.final_bin_set_unique} > {output.copy_script}
-        sed -i 's|$|.fasta {output.final_bin_folder}/.|g' {output.copy_script}
+        sed -i 's|$| {output.final_bin_folder}/.|g' {output.copy_script}
         bash {output.copy_script}
         """
         
@@ -255,8 +254,9 @@ rule assign_taxonomy:
         bins = "results/{sample}/final_bin_set/",
         final_bin_set_unique = "results/{sample}/final_bin_set_unique.txt"
     output:
-        out_file = "results/{sample}/taxonomy.tsv",
-        out_dir =  directory("results/{sample}/gtdbtk/")
+        out_file = "results/{sample}/taxonomy_final_bin_set.tsv",
+        out_dir =  directory("results/{sample}/gtdbtk/"),
+        final_bin_set_no_extension = "results/{sample}/final_bin_set_to_extract.txt"
     conda:
         "envs/gtdbtk-2.2.6.yml"
     params:
@@ -273,5 +273,6 @@ rule assign_taxonomy:
         -x {params.ext} --cpus {params.threads} \
         --out_dir {output.out_dir}
 
-        grep -f {input.final_bin_set_unique} {output.out_dir}/gtdbtk/classify/*.summary.tsv >> {output.out_file}
+        sed 's|.fasta||g' {input.final_bin_set_unique} > {output.final_bin_set_no_extension}
+        grep -f {output.final_bin_set_no_extension} {output.out_dir}/gtdbtk/classify/*.summary.tsv > {output.out_file}
         """
