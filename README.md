@@ -47,3 +47,6 @@ This pipeline exists because of the folks making these programs available, pleas
 
 # Further Reading:
 MIMAG Standards: https://www.nature.com/articles/nbt.3893
+
+# Data used for pipeline testing:
+Tisza MJ et al., "A catalog of tens of thousands of viruses from human metagenomes reveals hidden associations with chronic diseases.", Proc Natl Acad Sci U S A, 2021 Jun 8;118(23)
