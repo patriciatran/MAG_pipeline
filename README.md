@@ -4,6 +4,7 @@ I built this snakemake pipeline to showcase how FASTQ files can be taken all the
 ![MAG pipeline logo](https://github.com/patriciatran/MAG_pipeline/blob/main/visuals/MAG_pipeline_logo.png)
 
 The general steps  are:
+- Quality checked the reads using `fastQC`
 - Assembled the `fastq` reads using `SPADES`
 - Bin the MAGs using `metawrap`
 - Refining MAGs using `dasTool`
